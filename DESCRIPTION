@@ -21,11 +21,13 @@ Imports:
 	phangorn,
 	vegan,
 	geiger,
-	geoscale
+	geoscale,
+	Claddis
 License: GPL-3 | file LICENSE
-VignetteBuilder: knitr
 Suggests:
-    testthat,
-    knitr
+    testthat
 RoxygenNote: 6.0.1
 URL: https://github.com/TGuillerme/dispRity
+Remotes:
+    github::graemetlloyd/Claddis@master
+    
