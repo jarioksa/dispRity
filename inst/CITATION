@@ -1,0 +1,12 @@
+citHeader("To cite dispRity in publications use:")
+
+citEntry(entry = "Article",
+title        = "dispRity: a modular R package for measuring disparity.",
+author       = personList(as.person("Thomas Guillerme")),
+journal      = "Methods in Ecology and Evolution",
+year         = "in press",
+
+textVersion  =
+paste("To cite the package, please visit:",
+	  "https://github.com/TGuillerme/dispRity")
+)

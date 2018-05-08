@@ -1,33 +1,13 @@
-<!-- 
-dispRity 0.2.0 (2016-04-01)
+[CRAN release] dispRity v1.0.3 *got CRAN* (2019-03-20)
 =========================
-
-### NEW FEATURES
-
-  * Blabla
-
-### MINOR IMPROVEMENTS
-
-  * Blabla
-
-### BUG FIXES
-
-  * Blabla
-
-### DEPRECATED AND DEFUNCT
-
-  * Blabla
- -->
-
-[last on release] dispRity v1.0.0 *got CRAN* (2019-02-28)
-=========================
-### NEW FEATURES
-
-  * CRAN release 1
   
+### NEW FEATURES
+
+ * First CRAN release
+
 ### MINOR IMPROVEMENTS
 
-  * Added default Cailliez correction to `Claddis.ordination` function (with `add = TRUE`).
+  * Registered C symbols properly
   * Improved S3 methods
   * **Changed name**: `scale.dispRity` is now `rescale.dispRity`
   * **Changed name**: `merge.subsets` is now `combine.subsets`
@@ -36,6 +16,10 @@ dispRity 0.2.0 (2016-04-01)
 ### BUG FIXES
 
   * Minor bug fixes and typos in error messages and manuals
+
+### DEPRECATED AND DEFUNCT
+
+  * Removed `Claddis.ordination` function to comply with the CRAN requirement (this function is still live in the [GitHub version](https://github.com/TGuillerme/dispRity) 1.1)
 
 dispRity v0.5 *covered with tests* (2017-12-20)
 =========================

@@ -12,13 +12,12 @@ importFrom("phyclust", "gen.seq.HKY")
 importFrom("phangorn", "dist.hamming", "NJ", "RF.dist", "CI", "RI", "optim.parsimony", "parsimony")
 importFrom("vegan", "adonis", "vegdist")
 importFrom("geiger", "dtt", "ratematrix", "sim.char", "treedata")
-importFrom("Claddis", "MorphDistMatrixFast")
 
 ##C libraries
-useDynLib(dispRity)
+useDynLib(dispRity, .registration = TRUE)
 
 ## Data utilities
-export(Claddis.ordination)
+# export(Claddis.ordination)
 export(geomorph.ordination)
 
 ##Functions
