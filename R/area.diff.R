@@ -5,7 +5,7 @@
 #' @param x,y the two distributions to compare.
 #' @param rarefy Optional, if the length of \code{x} is is not equal to the one of \code{y}, how many rarefaction samples to use. If left empty a default number of replicates between 100 and 1000 is used (see details).
 #' @param cent.tend Optional, if the length of \code{x} is is not equal to the one of \code{y}, which central tendency to use (\code{defaut = mean}).
-#' @param sort logical, whether to always sort the x,y values (\code{TRUE}; default) or not (\code{FALSE}).
+#' @param sort \code{logical}, whether to always sort the x,y values (\code{TRUE}; default) or not (\code{FALSE}).
 #' 
 #' @details
 #' The number of replicates is chosen based on the variance of the distribution to rarefy using the Silverman's rule of thumb (Silverman 1986, pp.48, eqn 3.31) for choosing the bandwidth of a Gaussian kernel density estimator multiplied by 1000 with a result comprised between 100 and 1000.

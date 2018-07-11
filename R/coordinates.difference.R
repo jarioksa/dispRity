@@ -1,11 +1,11 @@
 #' @title Coordinates differences
 #'
-#' @description Calculates coordinate differences (e.g. from procrustes superimpositions)
+#' @description Calculates coordinate differences (e.g. from Procrustes superimpositions)
 #'
 #' @param coordinates An \code{array}, \code{list} or \code{matrix} of coordinates to be compared to the reference.
 #' @param reference A \code{matrix} of reference coordinates. If missing and \code{coordinates} is an \code{array} or \code{list}, the first element of \code{coordinates} is used.
-#' @param type the type of coordinates to output: can be \code{"cartesian"} (x0,y0,x1,y1,... format), \code{"spherical"} (radius, polar, azimuth) or \code{"vector"} (length, angle(s)).
-#' @param angle optional, whether display angles in radian (\code{"radian"} - default) or in degrees (\code{"degree"}).
+#' @param type the type of coordinates to output: can be \code{"cartesian"} (x0, y0, x1, y1,... format), \code{"spherical"} (radius, polar, azimuth) or \code{"vector"} (length, angle(s)).
+#' @param angle optional, whether display angles in radian (\code{"radian"}) or in degrees (\code{"degree"} - default).
 #' @param absolute.distance \code{logical}, when using \code{"vector"}, whether to use the absolute distance (from the centroid) or the relative one (from the reference landmark). See details.
 #' 
 #' @details
@@ -45,7 +45,7 @@
 #' @export
 #' @importFrom geometry dot
 
-coordinates.difference <- function(coordinates, reference, type = "cartesian", angle = "radian", absolute.distance = TRUE) {
+coordinates.difference <- function(coordinates, reference, type = "cartesian", angle = "degree", absolute.distance = TRUE) {
 
 #coordinates.difference(procrustes$coords, procrustes$coords[,,max_specimen], type = type, angle = angle)
 
