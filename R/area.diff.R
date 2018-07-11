@@ -5,6 +5,7 @@
 #' @param x,y the two distributions to compare.
 #' @param rarefy Optional, if the length of \code{x} is is not equal to the one of \code{y}, how many rarefaction samples to use. If left empty a default number of replicates between 100 and 1000 is used (see details).
 #' @param cent.tend Optional, if the length of \code{x} is is not equal to the one of \code{y}, which central tendency to use (\code{defaut = mean}).
+#' @param sort logical, whether to always sort the x,y values (\code{TRUE}; default) or not (\code{FALSE}).
 #' 
 #' @details
 #' The number of replicates is chosen based on the variance of the distribution to rarefy using the Silverman's rule of thumb (Silverman 1986, pp.48, eqn 3.31) for choosing the bandwidth of a Gaussian kernel density estimator multiplied by 1000 with a result comprised between 100 and 1000.
@@ -48,23 +49,31 @@
 #' @importFrom zoo rollmean
 #' @importFrom stats bw.nrd0
 
-area.diff <- function(x, y, rarefy, cent.tend = mean) {
+area.diff <- function(x, y, rarefy, cent.tend = mean, sort = TRUE) {
 
     match_call <- match.call()
 
     ## Sanitizing
-    check.class(x, "numeric")
-    check.class(y, "numeric")
-    silent <- check.class(rarefy, c("integer", "numeric"))
+    silent <- check.class(x, c("integer", "numeric"))
+    silent <- check.class(y, c("integer", "numeric"))
+    if(!missing(rarefy)) {
+        silent <- check.class(rarefy, c("integer", "numeric"))
+    }
     check.class(cent.tend, "function")
     test_fun <- make.metric(cent.tend, silent = TRUE)
     if(test_fun != "level1") {
         stop(paste0("Central tendency function ", as.expression(match_call$cent.tend), " must output a single value."))
     }
+    check.class(sort, "logical")
 
     ## Sort both distributions (y axis)
-    y_x <- sort(x, decreasing = TRUE)
-    y_y <- sort(y, decreasing = TRUE)
+    if(sort) {
+        y_x <- sort(x, decreasing = TRUE)
+        y_y <- sort(y, decreasing = TRUE)
+    } else {
+        y_x <- x
+        y_y <- y
+    }
 
     ## Getting the vectors lengths
     length_x <- length(x)
