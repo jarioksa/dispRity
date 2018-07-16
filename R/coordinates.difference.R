@@ -109,6 +109,9 @@ coordinates.difference <- function(coordinates, reference, type = "cartesian", a
     check.method(angle, c("radian", "degree"), msg = "angle")
     degree <- ifelse(angle == "degree", TRUE, FALSE)
 
+    ## absolute distance
+    check.class(absolute.distance, "logical")
+
     ## Getting the vector coordinates
     get.coord <- function(one_coordinate, reference, dimension) {
         ## Get the coordinates
@@ -240,26 +243,6 @@ coordinates.difference <- function(coordinates, reference, type = "cartesian", a
 
     return(coordinates)
 }
-
-
-# ##### TESTS
-# test <- FALSE
-# if(test){
-#     #TESTING bhatt.coeff
-
-#     context("coordinates.difference")
-
-#     #Test
-#     test_that("correct output", {
-
-#         ## Make data set
-#         data(plethodon)
-#         test_output <- geomorph::gpagen(plethodon$land, PrinAxes = FALSE, print.progress = FALSE)
-#         test_out <- coordinates.difference()
-
-#     })
-# }
-
 
 # stop("DEBUG in coordinates difference")
 
