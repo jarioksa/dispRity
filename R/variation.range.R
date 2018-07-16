@@ -3,9 +3,9 @@
 #' @description Selecting the range of differences between the maximum and minimum variation specimen
 #'
 #' @param procrustes Procrustes data of class \code{"gpagen"}.
-#' @param type Which type of coordinates to calculate (see \code{\link{coordinates.differences}} - default is \code{"sperical"}). See details.
-#' @param angle Which type of angle to calculate (see \code{\link{coordinates.differences}} - default is \code{"degree"}).
-#' @param what Which element from the \code{\link{coordinates.differences}} to use (default is \code{"radius"}).
+#' @param type Which type of coordinates to calculate (see \code{\link{coordinates.difference}} - default is \code{"sperical"}). See details.
+#' @param angle Which type of angle to calculate (see \code{\link{coordinates.difference}} - default is \code{"degree"}).
+#' @param what Which element from the \code{\link{coordinates.difference}} to use (default is \code{"radius"}).
 #' @param ordination Optional, either \code{TRUE} to perform an ordination or directly an ordinated PCA matrix (\code{"prcomp"}) to calculate the range from there.
 #' @param axis Optional, if an ordinated matrix is used, which axis (axes) to use. If left empty, all the axes will be used.
 #' @param return.ID \code{logical}, whether to return the ID of the max/min specimens or not.
@@ -50,7 +50,7 @@
 #' ## Getting the range variation between specimen using a 95 confidence interval range
 #' spec_range95 <- variation.range(proc_super, CI = 0.95, return.ID = TRUE)
 #' 
-#' ## The absolute maximum and minimum specimens
+#' ## The absolute maximum and minimum specimens
 #' spec_range$min.max
 #' 
 #' ## The lower and upper 95% range CI specimens
@@ -171,32 +171,32 @@ variation.range <- function(procrustes, type = "spherical", angle = "degree", wh
                 quantile_boundary <- quantile(areas, probs = c(quantile_min, quantile_max))
             }
 
-            ## Select extreme values
+            ## Select extreme values
             to_remove <- c(which(areas <= quantile_boundary[1]), which(areas >= quantile_boundary[2]))
 
             ## Remove them from the diff_consensus and the areas
             diff_consensus <- diff_consensus[-to_remove]
             areas <- areas[-to_remove]
 
-            ## Don't calculate CIs anymore
+            ## Don't calculate CIs anymore
             do_CI <- FALSE
         }
 
 
         ## Finding the max specimen
         if(do_CI) {
-            ## Take the the specimen in the upper CI
+            ## Take the the specimen in the upper CI
             if(!CI.hdr){
-                max_specimen <- which(areas == max(areas[which(areas <= quantile(areas, probs = quantile_max))]))  #add abs(areas)?
+                max_specimen <- which(areas == max(areas[which(areas <= quantile(areas, probs = quantile_max))])) #add abs(areas)?
             } else {
                 hdr_values <- hdrcde::hdr(areas, prob = CI*100)$hdr
-                max_specimen <- which(areas == max(areas[which(areas <= hdr_values[,2])]))  #add abs(areas)?
+                max_specimen <- which(areas == max(areas[which(areas <= hdr_values[,2])])) #add abs(areas)?
             }
             ## Adding the specimens to remove
             max_specimen <- c(max_specimen, which(areas > areas[max_specimen]))
         } else {
-            ## Take the actual max specimen
-            max_specimen <- which(areas == max(areas))  #add abs(areas)?
+            ## Take the actual max specimen
+            max_specimen <- which(areas == max(areas)) #add abs(areas)?
         }
         ## Save the ID of the max specimen
         max_specimenID <- names(max_specimen[1])
@@ -210,14 +210,14 @@ variation.range <- function(procrustes, type = "spherical", angle = "degree", wh
         ## Finding the min specimen
         if(do_CI) {
             if(!CI.hdr){
-                min_specimen <- which(areas_max == max(areas_max[which(areas_max <= quantile(areas_max, probs = quantile_max))]))  #add abs(areas)?
+                min_specimen <- which(areas_max == max(areas_max[which(areas_max <= quantile(areas_max, probs = quantile_max))])) #add abs(areas)?
             } else {
                 hdr_values <- hdrcde::hdr(areas_max, prob = CI*100)$hdr
-                min_specimen <- which(areas_max == max(areas_max[which(areas_max <= hdr_values[,2])]))  #add abs(areas)?
+                min_specimen <- which(areas_max == max(areas_max[which(areas_max <= hdr_values[,2])])) #add abs(areas)?
             }
         } else {
-            ## Take the actual max specimen
-            min_specimen <- which(areas_max == max(areas_max))  #add abs(areas)?
+            ## Take the actual max specimen
+            min_specimen <- which(areas_max == max(areas_max)) #add abs(areas)?
         }
         ## Save the ID of the min specimen
         min_specimenID <- names(min_specimen)
@@ -255,7 +255,7 @@ variation.range <- function(procrustes, type = "spherical", angle = "degree", wh
             fun_min <- function(x, CI) return(min(x))
         }
 
-        ## Applying the method the an ordination
+        ## Applying the method the an ordination
         max_coordinates <- get.pc.min.max(axis = axis, what = fun_max, PCA = ordination, GPA = procrustes, CI = CI)
         dimensions <- dim(max_coordinates)
         max_coordinates <- matrix(max_coordinates, dimensions[1], dimensions[2])

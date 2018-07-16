@@ -5,21 +5,21 @@
 \title{Coordinates differences}
 \usage{
 coordinates.difference(coordinates, reference, type = "cartesian",
-  angle = "radian", absolute.distance = TRUE)
+  angle = "degree", absolute.distance = TRUE)
 }
 \arguments{
 \item{coordinates}{An \code{array}, \code{list} or \code{matrix} of coordinates to be compared to the reference.}
 
 \item{reference}{A \code{matrix} of reference coordinates. If missing and \code{coordinates} is an \code{array} or \code{list}, the first element of \code{coordinates} is used.}
 
-\item{type}{the type of coordinates to output: can be \code{"cartesian"} (x0,y0,x1,y1,... format), \code{"spherical"} (radius, polar, azimuth) or \code{"vector"} (length, angle(s)).}
+\item{type}{the type of coordinates to output: can be \code{"cartesian"} (x0, y0, x1, y1,... format), \code{"spherical"} (radius, polar, azimuth) or \code{"vector"} (length, angle(s)).}
 
-\item{angle}{optional, whether display angles in radian (\code{"radian"} - default) or in degrees (\code{"degree"}).}
+\item{angle}{optional, whether display angles in radian (\code{"radian"}) or in degrees (\code{"degree"} - default).}
 
 \item{absolute.distance}{\code{logical}, when using \code{"vector"}, whether to use the absolute distance (from the centroid) or the relative one (from the reference landmark). See details.}
 }
 \description{
-Calculates coordinate differences (e.g. from procrustes superimpositions)
+Calculates coordinate differences (e.g. from Procrustes superimpositions)
 }
 \details{
 When using \code{type = "vector"} with \code{absolute.distance = TRUE}, the distance between two landmarks A and A' is calculated as d(0,A') - d(0,A) where 0 is the centroid of the shape to analysis.

@@ -11,11 +11,11 @@ variation.range(procrustes, type = "spherical", angle = "degree",
 \arguments{
 \item{procrustes}{Procrustes data of class \code{"gpagen"}.}
 
-\item{type}{Which type of coordinates to calculate (see \code{\link{coordinates.differences}} - default is \code{"sperical"}). See details.}
+\item{type}{Which type of coordinates to calculate (see \code{\link{coordinates.difference}} - default is \code{"sperical"}). See details.}
 
-\item{angle}{Which type of angle to calculate (see \code{\link{coordinates.differences}} - default is \code{"degree"}).}
+\item{angle}{Which type of angle to calculate (see \code{\link{coordinates.difference}} - default is \code{"degree"}).}
 
-\item{what}{Which element from the \code{\link{coordinates.differences}} to use (default is \code{"radius"}).}
+\item{what}{Which element from the \code{\link{coordinates.difference}} to use (default is \code{"radius"}).}
 
 \item{ordination}{Optional, either \code{TRUE} to perform an ordination or directly an ordinated PCA matrix (\code{"prcomp"}) to calculate the range from there.}
 
@@ -64,7 +64,7 @@ variation.range(proc_super, ordination = TRUE, axis = 1, type = "vector", what =
 ## Getting the range variation between specimen using a 95 confidence interval range
 spec_range95 <- variation.range(proc_super, CI = 0.95, return.ID = TRUE)
 
-## The absolute maximum and minimum specimens
+## The absolute maximum and minimum specimens
 spec_range$min.max
 
 ## The lower and upper 95\% range CI specimens

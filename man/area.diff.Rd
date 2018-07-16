@@ -4,14 +4,16 @@
 \alias{area.diff}
 \title{Area difference}
 \usage{
-area.diff(x, y, rarefy, cent.tend = mean)
+area.diff(x, y, rarefy, cent.tend = mean, sort = TRUE)
 }
 \arguments{
 \item{x, y}{the two distributions to compare.}
 
-\item{rarefy}{Optional, if \code{x != y}, how many rarefaction samples to use. If left empty a default number of replicates between 100 and 1000 is used (see details).}
+\item{rarefy}{Optional, if the length of \code{x} is is not equal to the one of \code{y}, how many rarefaction samples to use. If left empty a default number of replicates between 100 and 1000 is used (see details).}
 
-\item{cent.tend}{Optional, if \code{x != y}, which central tendency to use (\code{defaut = mean})}
+\item{cent.tend}{Optional, if the length of \code{x} is is not equal to the one of \code{y}, which central tendency to use (\code{defaut = mean}).}
+
+\item{sort}{\code{logical}, whether to always sort the x,y values (\code{TRUE}; default) or not (\code{FALSE}).}
 }
 \description{
 Measure the area difference between two ranked distribution
@@ -22,12 +24,31 @@ For example, for rarefying \code{x}, \code{rarefy = round(stats::bw.nrd0(x) * 10
 With \code{100 <= rarefy <= 1000}.
 }
 \examples{
+set.seed(1)
 ## Two distributions
 x <- rnorm(10)
 y <- runif(10)
 
 ## The area difference
 area.diff(x, y)
+
+## Visualising the difference
+plot(sort(x), type = "l", col = "orange", lwd = 2)
+lines(sort(y), col = "blue", lwd = 2)
+polygon(c(1:10, 10:1), c(sort(x), sort(y, TRUE)), col = "grey", border = NA)
+legend("topleft", legend  = c("x", "y", "area difference"), col = c("orange", "blue", "grey"),
+       lty = c(1,1,0), pch = c(NA,NA,15))
+
+
+## Two unequal distributions
+z <- rnorm(100)
+
+## The area difference estimation
+area.diff(x, z)
+
+## The area difference estimation with a fixed rarefaction value using the median
+area.diff(x, z, rarefy = 500, cent.tend = median)
+
 
 }
 \references{
