@@ -11,8 +11,8 @@ data(scallops)
 proc_super_2D <- geomorph::gpagen(plethodon$land, print.progress = FALSE)
 proc_super_3D <- geomorph::gpagen(scallops$coorddata, print.progress = FALSE)
 coord <- proc_super_2D$coord
-    tmp <- sapply(1:dim(coord)[3], function(x, coord) return(list(coord[,,x])), coord)
-    tmp[[40]] <- matrix(rnorm(25), 5, 5)
+tmp <- sapply(1:dim(coord)[3], function(x, coord) return(list(coord[,,x])), coord)
+tmp[[40]] <- matrix(rnorm(25), 5, 5)
 names(coord) <- seq(1:40)
 attributes(proc_super_2D$coord)$dimnames[[3]] <- seq(1:40)
 #Test
@@ -20,7 +20,7 @@ test_that("coordinates.difference sanitizing works", {
 
     ## Data must be array list or matrix
     expect_error(coordinates.difference("proc_super_2D$coords", proc_super_2D$consensus))
-    expect_error(coordinates.difference(proc_super_2D$coords, "proc_super_2D$consensus")
+    expect_error(coordinates.difference(proc_super_2D$coords, "proc_super_2D$consensus"))
     expect_error(coordinates.difference(tmp))
 
     ## Reference must be a matrix
