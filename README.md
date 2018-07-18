@@ -18,8 +18,9 @@ CRAN:
 
 [![minimal R version](https://img.shields.io/badge/R%3E%3D-3.3.3-6666ff.svg)](https://cran.r-project.org/)
 [![cran version](http://www.r-pkg.org/badges/version/dispRity)](https://cran.r-project.org/package=dispRity)
-[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/dispRity?)](https://github.com/metacran/cranlogs.app)
+[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/dispRity)](https://github.com/metacran/cranlogs.app)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.846254.svg)](https://doi.org/10.5281/zenodo.846254)
+<!-- ![](http://cranlogs.r-pkg.org/badges/dispRity) -->
 
 
 ### **`dispRity`** is a `R` modular package for measuring disparity from multidimensional matrices.
@@ -74,7 +75,7 @@ Authors and contributors
 
 Citation
 -------
-If you are using this package, please cite the following Zenodo DOI (an associated paper will be added soon):
+If you are using this package, please cite the paper:
 
 * Guillerme, T. (**2018**). dispRity: a modular R package for measuring disparity. Methods in Ecology and Evolution. [doi:10.1111/2041-210X.13022](https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13022)
 
