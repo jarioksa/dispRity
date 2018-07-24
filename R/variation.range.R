@@ -1,6 +1,6 @@
 #' @title Range of variation
 #'
-#' @description Selecting the range of differences between the maximum and minimum variation specimen
+#' @description Selecting the range of differences between the specimen with the maximum and minimum variation
 #'
 #' @param procrustes Procrustes data of class \code{"gpagen"}.
 #' @param type Which type of coordinates to calculate (see \code{\link{coordinates.difference}} - default is \code{"sperical"}). See details.
@@ -10,7 +10,6 @@
 #' @param axis Optional, if an ordinated matrix is used, which axis (axes) to use. If left empty, all the axes will be used.
 #' @param return.ID \code{logical}, whether to return the ID of the max/min specimens or not.
 #' @param CI Optional, a value of confidence interval to use (rather than the max/min).
-#' @param CI.hdr Logical, whether to use the proper CI estimation from \code{\link[hdrcde]{hdr}} (\code{TRUE}) or not (\code{FALSE} - default) see details.
 #' @param CI.pre Logical, whether apply the CI before (\code{TRUE}) or during (\code{FALSE} - default) the variation range calculation; see details.
 #' 
 #' 
@@ -18,12 +17,6 @@
 # When \code{type = "spherical"}, the distances are relative to each landmark, the selection of the two most extreme specimen is based on their absolute value (i.e. to select the two most distant specimen). Potential CI limits only affect the right side of the curve (the maxima).
 # When \code{type = "vector"}, the distances are absolute from the centre of the specimen (and can be negative), the selection of the two most extreme specimen is thus based on the absolute values as well (to select the most distance specimen). However, potential CI limits affect both size of the curve (removing the maxima and minima).
 #'
-#' 
-#' When \code{CI.hdr = FALSE} the specimen removed are the ones >= CI from the consensus and >= CI from the furthest from the consensus. In other words, the specimen the closest to the CI boundary is first chosen (the max_specimen), the distance are measured from this specimen and then the other specimen the closest to the same CI boundary is chosen (the min_specimen).
-#' When \code{CI.hdr = TRUE} is used, the specimen from both size of the confidence interval are removed straight from the first step (i.e. only the specimens with the CI in terms of distance from the consensus are considered).
-#'
-#' When \code{CI.pre = TRUE}, the extreme specimens are removed from the distribution just after calculating the distances from the consensus (i.e. before selecting the maximum and minimum specimen).
-#'  
 #' @examples
 #' ## Loading the geomorph dataset
 #' require(geomorph)
@@ -65,36 +58,33 @@
 
 
 
-variation.range <- function(procrustes, type = "spherical", angle = "degree", what = "radius", ordination, axis, return.ID = FALSE, CI, CI.hdr = FALSE, CI.pre = FALSE) {
+variation.range <- function(procrustes, type = "spherical", angle = "degree", what = "radius", ordination, axis, return.ID = FALSE, CI) {
 
-    ## Sanitizing
     ## procrustes
     check.class(procrustes, "gpagen")
-
-    ## type and angle are dealt with by coordinates.data
-
-    ## what is dealt with by coordinates.area
 
     ## CI
     if(missing(CI)) {
         do_CI <- FALSE
     } else {
 
-        check.class(CI.hdr, "logical")
-        check.class(CI.pre, "logical")
-
         do_CI <- TRUE
-        check.length(CI, 1, msg = " must be on confidence interval in probability.")
-        if(CI < 0 || CI > 1) {
-            stop("CI must be a percentage between 0 and 1.")
+        check.length(CI, 1, msg = " must be on confidence interval in probability or percentage.")
+        if(CI > 1) {
+            CI <- CI * 100
+            if(CI > 100) {
+                stop("CI must be a percentage between 0 and 100.")
+            }
+        } else {
+            if(CI < 0) {
+                stop("CI must be a percentage between 0 and 100.")
+            }
         }
-
 
         ## Convert the CI value into quantile boundaries
-        if(!CI.hdr){
-            quantile_max <- 0.5 + (CI/2)
-            quantile_min <- 0.5 - (CI/2)
-        }
+        cis <- CI.converter(CI)
+        quantile_max <- cis[2]
+        quantile_min <- cis[1]
     }
 
     ## ordination
@@ -141,7 +131,7 @@ variation.range <- function(procrustes, type = "spherical", angle = "degree", wh
         } else {
             check.class(axis, "numeric")
             if(min(axis) < 1 || max(axis) > ncol(ordination$x)) {
-                stop("Wrong axis number.")
+                stop(paste0("Wrong axis number. Should be between 1 and ", ncol(ordination$x), "."))
             }
         }
     }
@@ -163,35 +153,11 @@ variation.range <- function(procrustes, type = "spherical", angle = "degree", wh
         ## Get the volume of change for each element (area under the curve)
         areas <- abs(unlist(lapply(diff_consensus, coordinates.area, what = what)))
 
-        ## Remove the extremes prior to analysis
-        if(do_CI && CI.pre) {
-            if(CI.hdr) {
-                quantile_boundary <- as.vector(hdrcde::hdr(areas, prob = CI*100)$hdr)
-            } else {
-                quantile_boundary <- quantile(areas, probs = c(quantile_min, quantile_max))
-            }
-
-            ## Select extreme values
-            to_remove <- c(which(areas <= quantile_boundary[1]), which(areas >= quantile_boundary[2]))
-
-            ## Remove them from the diff_consensus and the areas
-            diff_consensus <- diff_consensus[-to_remove]
-            areas <- areas[-to_remove]
-
-            ## Don't calculate CIs anymore
-            do_CI <- FALSE
-        }
-
-
         ## Finding the max specimen
         if(do_CI) {
             ## Take the the specimen in the upper CI
-            if(!CI.hdr){
-                max_specimen <- which(areas == max(areas[which(areas <= quantile(areas, probs = quantile_max))])) #add abs(areas)?
-            } else {
-                hdr_values <- hdrcde::hdr(areas, prob = CI*100)$hdr
-                max_specimen <- which(areas == max(areas[which(areas <= hdr_values[,2])])) #add abs(areas)?
-            }
+            max_specimen <- which(areas == max(areas[which(areas <= quantile(areas, probs = quantile_max))])) #add abs(areas)?
+    
             ## Adding the specimens to remove
             max_specimen <- c(max_specimen, which(areas > areas[max_specimen]))
         } else {
@@ -209,12 +175,8 @@ variation.range <- function(procrustes, type = "spherical", angle = "degree", wh
 
         ## Finding the min specimen
         if(do_CI) {
-            if(!CI.hdr){
-                min_specimen <- which(areas_max == max(areas_max[which(areas_max <= quantile(areas_max, probs = quantile_max))])) #add abs(areas)?
-            } else {
-                hdr_values <- hdrcde::hdr(areas_max, prob = CI*100)$hdr
-                min_specimen <- which(areas_max == max(areas_max[which(areas_max <= hdr_values[,2])])) #add abs(areas)?
-            }
+            min_specimen <- which(areas_max == max(areas_max[which(areas_max <= quantile(areas_max, probs = quantile_max))])) #add abs(areas)?
+            
         } else {
             ## Take the actual max specimen
             min_specimen <- which(areas_max == max(areas_max)) #add abs(areas)?

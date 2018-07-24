@@ -47,8 +47,6 @@
 
 coordinates.difference <- function(coordinates, reference, type = "cartesian", angle = "degree", absolute.distance = TRUE) {
 
-#coordinates.difference(procrustes$coords, procrustes$coords[,,max_specimen], type = type, angle = angle)
-
     ## Sanitizing
 
     ## Coordinates
@@ -155,7 +153,7 @@ coordinates.difference <- function(coordinates, reference, type = "cartesian", a
         return(output)
     }
 
-    get.vector.diffs <- function(one_coordinate, dimension, angle, absolute.distance = TRUE) {
+    get.vector.diffs <- function(one_coordinate, dimension, angle, absolute.distance) {
 
         ## Transform coordinates into a vector
         coord.to.vector <- function(coords, dimension) {
@@ -191,9 +189,9 @@ coordinates.difference <- function(coordinates, reference, type = "cartesian", a
 
         ## Get the length difference
         if(absolute.distance == TRUE) {
-            length <- obs_length - ref_length
-        } else {
             length <- euclidean.distance(one_coordinate, dimension)
+        } else {
+            length <- obs_length - ref_length
         }
 
         return(matrix(c(length, angles), ncol = 2, byrow = FALSE, dimnames = list(c(),c("length", "angle"))))

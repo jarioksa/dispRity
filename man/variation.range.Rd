@@ -5,8 +5,7 @@
 \title{Range of variation}
 \usage{
 variation.range(procrustes, type = "spherical", angle = "degree",
-  what = "radius", ordination, axis, return.ID = FALSE, CI,
-  CI.hdr = FALSE, CI.pre = FALSE)
+  what = "radius", ordination, axis, return.ID = FALSE, CI)
 }
 \arguments{
 \item{procrustes}{Procrustes data of class \code{"gpagen"}.}
@@ -25,18 +24,13 @@ variation.range(procrustes, type = "spherical", angle = "degree",
 
 \item{CI}{Optional, a value of confidence interval to use (rather than the max/min).}
 
-\item{CI.hdr}{Logical, whether to use the proper CI estimation from \code{\link[hdrcde]{hdr}} (\code{TRUE}) or not (\code{FALSE} - default) see details.}
-
 \item{CI.pre}{Logical, whether apply the CI before (\code{TRUE}) or during (\code{FALSE} - default) the variation range calculation; see details.}
 }
 \description{
-Selecting the range of differences between the maximum and minimum variation specimen
+Selecting the range of differences between the specimen with the maximum and minimum variation
 }
 \details{
-When \code{CI.hdr = FALSE} the specimen removed are the ones >= CI from the consensus and >= CI from the furthest from the consensus. In other words, the specimen the closest to the CI boundary is first chosen (the max_specimen), the distance are measured from this specimen and then the other specimen the closest to the same CI boundary is chosen (the min_specimen).
-When \code{CI.hdr = TRUE} is used, the specimen from both size of the confidence interval are removed straight from the first step (i.e. only the specimens with the CI in terms of distance from the consensus are considered).
 
-When \code{CI.pre = TRUE}, the extreme specimens are removed from the distribution just after calculating the distances from the consensus (i.e. before selecting the maximum and minimum specimen).
 }
 \examples{
 ## Loading the geomorph dataset

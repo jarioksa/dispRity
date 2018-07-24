@@ -88,15 +88,6 @@ test_that("spherical works", {
 
 test_that("vector works", {
 
-    ## Example 2D
-    vector_diff <- coordinates.difference(proc_super_2D$coords, proc_super_2D$consensus, type = "vector")
-
-    ## Right format
-    expect_is(vector_diff, "list")
-    expect_equal(length(vector_diff), dim(proc_super_2D$coords)[3])
-    expect_equal(dim(vector_diff[[1]]), c(dim(proc_super_2D$coords)[1], dim(proc_super_2D$coords)[2]))
-    expect_equal(colnames(vector_diff[[1]]), c("length", "angle"))
-    
     ## Example 3D
     vector_diff <- coordinates.difference(proc_super_3D$coords, proc_super_3D$consensus, type = "vector")
 
@@ -106,11 +97,21 @@ test_that("vector works", {
     expect_equal(dim(vector_diff[[1]]), c(dim(proc_super_3D$coords)[1], dim(proc_super_3D$coords)[2]-1))
     expect_equal(colnames(vector_diff[[1]]), c("length", "angle"))
 
+    ## Example 2D
+    vector_diff <- coordinates.difference(proc_super_2D$coords, proc_super_2D$consensus, type = "vector")
+
+    ## Right format
+    expect_is(vector_diff, "list")
+    expect_equal(length(vector_diff), dim(proc_super_2D$coords)[3])
+    expect_equal(dim(vector_diff[[1]]), c(dim(proc_super_2D$coords)[1], dim(proc_super_2D$coords)[2]))
+    expect_equal(colnames(vector_diff[[1]]), c("length", "angle"))
+    
+
     ## With absolute distance
   
     ## Example 3D
-    expect_warning(vector_diff_noabs <- coordinates.difference(proc_super_2D$coords, type = "vector", absolute.distance = TRUE))
-
-    #### PROBLEM IN THE ANGLE MEASUREMENTS!
+    expect_warning(vector_diff_noabs <- coordinates.difference(proc_super_2D$coords, type = "vector", absolute.distance = FALSE))
+    expect_lt(vector_diff_noabs[[40]][1,1], 0)
+    expect_gt(vector_diff[[40]][1,1], 0)
 
 })
