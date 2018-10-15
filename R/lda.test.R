@@ -4,6 +4,7 @@
 #'
 #' @param data A \code{dispRity} object with attributed subsets.
 #' @param subset The size of the training dataset (by default the size is @@@)
+#TODO: get a default subset size selector? Maybe something like the Silverman's rule? 
 #' @param prior A \code{vector} of prior expectations (if missing the prior is set to the observed proportions in the training set).
 #' @param bootstrap Optional, the number of bootstrap replicates to run (is missing, no bootstraps are run).
 #' @param CV Logical, whether to perform cross-validation or not (default is \code{FALSE}).

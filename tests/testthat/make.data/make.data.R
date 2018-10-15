@@ -112,3 +112,44 @@ data_bootstrapped <- boot.matrix(chrono.subsets(BeckLee_mat99, BeckLee_tree, met
 model_test_data <- dispRity(data_bootstrapped, c(sum, variances))
 
 save(model_test_data, file="../model_test_data.Rda")
+
+
+#####################################
+## LDA test data
+#####################################
+library(ape)
+library(geomorph)
+set.seed(42)
+
+## Loading the plethodon dataset
+data(plethodon)
+
+## Performing the GPA
+procrustes <- geomorph::gpagen(plethodon$land, print.progress = FALSE)
+
+## Sorting the species
+Jord_sp <- which(plethodon$species == "Jord")
+Teyah_sp <- which(plethodon$species == "Teyah")
+
+## Naming the species in the procrustes object
+Jord_sp_names <- paste0("Jord_", Jord_sp)
+Teyah_sp_names <- paste0("Teyah_", Teyah_sp)
+dimnames(procrustes$coords)[[3]] <- rep(NA, length(c(Jord_sp, Teyah_sp)))
+dimnames(procrustes$coords)[[3]][Jord_sp] <- Jord_sp_names
+dimnames(procrustes$coords)[[3]][Teyah_sp] <- Teyah_sp_names
+
+## Procrustes matrix
+procrustes_matrix <- geomorph::two.d.array(procrustes$coords)
+
+## Species classifier
+species_class <- unlist(lapply(strsplit(rownames(procrustes_matrix), split = "_"),
+                               function(x) return(x[1])))
+
+## Morpho_groups classifier
+morpho_class <- c(rep("group1", 10), rep("group2", 10), rep("group3", 20))
+
+## Random classifier
+random_class <- sample(c("random1", "random2", "random3"), 40, replace = TRUE) 
+
+lda_test_data <- list("procrustes" = procrustes_matrix, "species" = species_class, "morpho" = morpho_class, "random" = random_class)
+save(lda_test_data, file = "../lda_test_data.Rda")
