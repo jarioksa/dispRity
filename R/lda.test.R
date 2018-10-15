@@ -2,7 +2,7 @@
 #'
 #' @description Running a linear discriminant analysis or canonical variable analysis test on a \code{dispRity} object
 #'
-#' @param data A \code{dispRity} object with attributed subsets.
+#' @param data A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.
 #' @param subset The size of the training dataset (by default the size is @@@)
 #TODO: get a default subset size selector? Maybe something like the Silverman's rule? 
 #' @param prior A \code{vector} of prior expectations (if missing the prior is set to the observed proportions in the training set).
@@ -21,17 +21,29 @@
 
 # MASS, lda
 
-
-# library(geomorph)
-# ## Loading the plethodon dataset
-geomorph_df <- geomorph.data.frame(procrustes, species = plethodon$species)
-
-geomorph.ordination(geomorph_df)
-
-
-
+# stop("DEBUG test.lda")
+# load("../tests/testthat/lda_test_data.Rda")
+# source("sanitizing.R")
 
 test.lda <- function(data, subset, prior, bootstrap, CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...) {
+
+    match_call <- match.call()
+
+    ## Sanitizing
+    ## Data
+    data_class <- check.class(data, c("dispRity", "matrix", "data.frame"))
+    if(data_class == "matrix") {
+        ## Check if the last column is a factor
+        last_col <- ncol(data)
+        test_factor <- as.factor(data[, last_col])
+        if(length(levels(test_factor)) == nrow(data)) {
+            stop("")
+        }
+    } else {
+        ## Check if the dispRity object has 
+
+    }
+
 
     #TODO: Add the option to update models
 
