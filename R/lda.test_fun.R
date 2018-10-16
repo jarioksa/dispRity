@@ -24,7 +24,7 @@ factorise.subsets <- function(data) {
             vector_out[sub_list[[one_level]]] <- level[one_level]
         }
 
-        return(vector_out)
+        return(as.factor(vector_out))
     }
 
     ## Function for translating one category (not unique)
@@ -38,7 +38,7 @@ factorise.subsets <- function(data) {
         ## Translate
         vector_out[subsets_list[[category]]$elements] <- 1
         vector_out[-subsets_list[[category]]$elements] <- 0
-        return(vector_out)
+        return(as.factor(vector_out))
     }
 
     ## Get the number of elements to subset
