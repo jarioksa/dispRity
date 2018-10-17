@@ -121,9 +121,7 @@ lda.test <- function(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE, P
     check.class(LASSO, "logical")
     check.class(PGLS, "logical")
 
-
-    return("stop")
-
+    ## 
 
 
 

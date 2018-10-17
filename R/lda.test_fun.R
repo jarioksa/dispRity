@@ -91,3 +91,30 @@ factorise.subsets <- function(data) {
         return(output)
     }
 }
+
+## Run a single LDA
+run.one.LDA <- function(data, grouping, prior, subset, CV, ...) {
+
+    ## First we select a subset of the dataset for training
+    subset <- sample(1:nrow(data), subset)
+    training <- data[subset, ncol(data)]
+
+    ## Get the number classes from the data
+    classes <- unique(data[, ncol(data)])
+    
+    if(prior == "estimate_prior"){
+        ## If estimate prior
+        prior <- as.numeric((table(training)/sum(table(training))))
+    }
+
+
+    ## Fitting the LDA
+    lda_fit <- MASS::lda(x = data[, -ncol(data)], grouping = data[, ncol(data)],
+                         prior = prior, subset = subset, CV = CV, ...)
+
+    ## Predicting the fit
+    lda_predict <- predict(lda_fit, data[-subset, -ncol(data)])
+
+    ## Return the predictions results and the fit
+    return(list("fit" = lda_fit, "predict" = lda_predict, "training" = subset, "data" = data))
+}
