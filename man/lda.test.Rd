@@ -2,10 +2,10 @@
 % Please edit documentation in R/lda.test.R
 \name{lda.test}
 \alias{lda.test}
-\title{Run a LDA or CBA test}
+\title{Run a discriminant analysis type}
 \usage{
-\method{lda}{test}(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE,
-  PGLS = FALSE, ...)
+\method{lda}{test}(data, train, prior, fun.type = "linear", bootstrap,
+  CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...)
 }
 \arguments{
 \item{data}{A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.}
@@ -22,10 +22,12 @@
 
 \item{PGLS}{Logical, whether to perform a PGLS analysis.}
 
-\item{...}{Optional arguments to be passed to \code{\link[MASS]{lda}}.}
+\item{...}{Optional arguments to be passed to the discriminant function.}
+
+\item{type}{The type of discriminant function to use: either \code{"linear"} (default), \code{"quadratic"} or any function of similar to the generic type \code{\link[MASS]{lda}}.}
 }
 \description{
-Running a linear discriminant analysis or canonical variable analysis test on a \code{dispRity} object
+Running a discriminant analysis or canonical variable analysis test on a \code{dispRity} object
 }
 \examples{
 

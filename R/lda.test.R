@@ -1,16 +1,17 @@
-#' @title Run a LDA or CBA test
+#' @title Run a discriminant analysis type
 #'
-#' @description Running a linear discriminant analysis or canonical variable analysis test on a \code{dispRity} object
+#' @description Running a discriminant analysis or canonical variable analysis test on a \code{dispRity} object
 #'
 #' @param data A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.
 #' @param train The size of the training dataset (by default the size is @@@)
 #TODO: get a default subset size selector? Maybe something like the Silverman's rule? 
 #' @param prior A \code{vector} of prior expectations (if missing the prior is set to the observed proportions in the training set).
+#' @param type The type of discriminant function to use: either \code{"linear"} (default), \code{"quadratic"} or any function of similar to the generic type \code{\link[MASS]{lda}}.
 #' @param bootstrap Optional, the number of bootstrap replicates to run (is missing, no bootstraps are run).
 #' @param CV Logical, whether to perform cross-validation or not (default is \code{FALSE}).
 #' @param LASSO Logical, whether to perform a LASSO analysis.
 #' @param PGLS Logical, whether to perform a PGLS analysis.
-#' @param ... Optional arguments to be passed to \code{\link[MASS]{lda}}.
+#' @param ... Optional arguments to be passed to the discriminant function.
 #' 
 #' @examples
 #'
@@ -36,7 +37,7 @@
 # prior <- 
 
 
-lda.test <- function(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...) {
+lda.test <- function(data, train, prior, fun.type = "linear", bootstrap, CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...) {
 
     match_call <- match.call()
 
@@ -46,7 +47,7 @@ lda.test <- function(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE, P
     if(data_class != "dispRity") {
         ## Check if the last column is a factor
         last_col <- ncol(data)
-        test_factor <- as.factor(data[, last_col])
+        test_factor <- list(as.factor(data[, last_col]))
         if(length(levels(test_factor)) == nrow(data)) {
             stop.call(msg.pre = "The last column of ", call = match_call$data, msg = " does not contain factors.")
         }
@@ -63,6 +64,9 @@ lda.test <- function(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE, P
 
         ## Convert into the data table + factors
         factors <- factorise.subsets(data)
+        if(class(factors) != "list") {
+            factors <- list(factors)
+        }
         data_matrix <- data$matrix
     }
 
@@ -104,6 +108,23 @@ lda.test <- function(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE, P
         }
     }
 
+    ## Type
+    type_class <- check.class(type, c("character", "function"))
+    if(type_class == "character") {
+        allowed_classes <- c("linear", "quadratic")
+        check.method(type, allowed_classes, "type argument must be a function or")
+
+        if(type == "linear") {
+            fun.type <- MASS::lda
+        }
+        if(type == "quadratic") {
+            fun.type <- MASS::qda
+        }
+    } else {
+        ## User defined function
+        fun.type <- type
+    }
+
     ## Bootstrap
     if(!missing(bootstrap)) {
         ## Do bootstrap
@@ -121,39 +142,13 @@ lda.test <- function(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE, P
     check.class(PGLS, "logical")
 
     ## Run the LDA
-    lda_out <- lapply(factors, run.one.LDA, data_matrix, prior = prior, train = train, CV = CV)
+    lda_out <- lapply(factors, run.one.LDA, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, ...)
+    # lda_out <- lapply(factors, run.one.LDA, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type) ; warning("DEBUG lda.test")
 
-    run.one.LDA(factors[[1]], data_matrix, prior = prior, train = train, CV = CV)
-
-    ## Handle colinear warnings
+    ## Handle colinear warnings!!!
 
 
 
     # #TODO: Add the option to update models
-
-
-
-    # ## If estimate prior
-    # prior <- as.numeric((table(training)/sum(table(training))))
-
-    # ## First we select a subset of the dataset for training
-    # subset <- sample(1:nrow(data), subset)
-    # training <- data[subset, ncol(data)]
-
-    # ## Get the number classes from the data
-    # classes <- unique(data[, ncol(data)])
-
-    # ## Second we set the prior
-
-
-    # ## Fitting the LDA
-    # lda_fit <- MASS::lda(x = data[, -ncol(data)], grouping = data[, ncol(data)],
-    #                      prior = prior, subset = subset, CV = CV, ...)
-
-    # ## Predicting the fit
-    # lda_predict <- predict(lda_fit, data[-subset, -ncol(data)])
-
-    # ## Return the predictions results and the fit
-    # return(list("fit" = lda_fit, "predict" = lda_predict, "training" = subset, "data" = data))
 
 }
