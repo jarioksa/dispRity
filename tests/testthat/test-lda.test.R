@@ -92,13 +92,13 @@ test_that("lda.test works", {
     ## Running the two examples
     test <- lda.test(data_df, train = 50, bootstraps = 7)
     expect_is(test, c("dispRity", "lda-test"))
-    expect_equal(names(test), c("species"))
+    expect_equal(names(test), c("species", "call"))
     expect_equal(length(test[[1]]), 7)
     expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))
 
     expect_warning(test <- lda.test(data_disparity, train = 10, bootstraps = 5))
     expect_is(test, c("dispRity", "lda-test"))
-    expect_equal(names(test), c("species", "morpho"))
+    expect_equal(names(test), c("species", "morpho", "call"))
     expect_equal(length(test[[1]]), 5)
     expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))    
 

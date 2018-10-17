@@ -81,6 +81,7 @@ print.dispRity <- function(x, all = FALSE, ...) {
                 }
                 return()
             } 
+
             if(class(x)[2] == "model.test") {
                 cat("Disparity evolution model fitting:\n")
                 cat(paste0("Call: ", as.expression(x$call), " \n\n"))
@@ -110,7 +111,6 @@ print.dispRity <- function(x, all = FALSE, ...) {
                 return()
             }
 
-
             if(class(x)[2] == "dtt") {
                 if(length(x) != 2){
                     ## Tested dtt
@@ -138,6 +138,23 @@ print.dispRity <- function(x, all = FALSE, ...) {
                     cat(paste0("Use plot.dispRity to visualise."))
                 }
             }
+
+            if(class(x)[2] == "lda.test") {
+
+                ## Tested lda
+                cat("Discriminant test:\n")
+                cat(paste0("Call: ", as.expression(x$call), " \n\n"))
+                ## Factors
+                length_x <- length(x)
+                cat(paste0("Tested ", ifelse(length_x > 2, "factors", "factor"), ":\n"))
+                cat("    ", paste(names(x)[-length_x], collapse = ", "), ".\n\n", sep = "")
+
+                cat("Fit:\n")
+                cat("@@@@ TO ADD RESULTS MINI SUMMARY\n")
+                cat("Use summary.dispRity() or plot.dispRity() for displaying the full results.\n")
+                return()
+            }
+
         }
 
         

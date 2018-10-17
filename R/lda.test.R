@@ -56,7 +56,7 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
         ## Check if the last column is a factor
         last_col <- ncol(data)
         test_factor <- list(as.factor(data[, last_col]))
-        if(length(levels(test_factor)) == nrow(data)) {
+        if(length(levels(test_factor[[1]])) == nrow(data)) {
             stop.call(msg.pre = "The last column of ", call = match_call$data, msg = " does not contain factors.")
         }
 
@@ -174,6 +174,7 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
     #TODO: Add LASSO
 
     ## Output the results
+    lda_out$call <- match_call
     class(lda_out) <- c("dispRity", "lda.test")
     return(lda_out)
 }

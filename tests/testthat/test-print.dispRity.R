@@ -231,3 +231,23 @@ test_that("print.dispRity with model.test data", {
           " p-interval         : (0.09090909, 0.6363636)" 
         ))
 })
+
+test_that("print.dispRity with lda.test data" {
+
+    ## Plethodon test
+    require(geomorph)
+    data(plethodon)
+    procrustes <- geomorph::gpagen(plethodon$land, print.progress = FALSE)
+    geomorph_df <- geomorph.data.frame(procrustes, species = as.factor(lda_test_data$species), morpho = as.factor(lda_test_data$morpho))
+    data_disparity <- geomorph.ordination(geomorph_df, ordinate = FALSE)
+
+    expect_warning(test <- lda.test(data_disparity, train = 10))
+
+    print_test <- capture.output(test)
+
+
+    expect_equal(print_test[1],
+        c("Discriminant test:")
+        )
+
+})
