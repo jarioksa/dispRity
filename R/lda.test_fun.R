@@ -93,28 +93,34 @@ factorise.subsets <- function(data) {
 }
 
 ## Run a single LDA
-run.one.LDA <- function(data, grouping, prior, subset, CV, ...) {
+run.one.LDA <- function(factor, data_matrix, prior, train, CV, ...) {
+
+# data <- data.frame(data_matrix, factors[[1]])
+# colnames(data)[ncol(data)] <- names(factors)[[1]]
 
     ## First we select a subset of the dataset for training
-    subset <- sample(1:nrow(data), subset)
-    training <- data[subset, ncol(data)]
+    subset <- sample(1:nrow(data_matrix), train)
+# subset <- sample(1:nrow(data), subset)
+    training <- factor[subset]
+# training <- data[subset, ncol(data)]
 
-    ## Get the number classes from the data
-    classes <- unique(data[, ncol(data)])
     
-    if(prior == "estimate_prior"){
+    if(!prior[[1]][[1]]){
         ## If estimate prior
         prior <- as.numeric((table(training)/sum(table(training))))
     }
 
 
     ## Fitting the LDA
-    lda_fit <- MASS::lda(x = data[, -ncol(data)], grouping = data[, ncol(data)],
-                         prior = prior, subset = subset, CV = CV, ...)
+    lda_fit <- MASS::lda(x = data_matrix, grouping = factor, prior = prior, subset = subset, CV = CV, ...)
+# lda_fit <- MASS::lda(x = data[, -ncol(data)], grouping = data[, ncol(data)],
+                     # prior = prior, subset = subset, CV = CV, ...)
 
     ## Predicting the fit
-    lda_predict <- predict(lda_fit, data[-subset, -ncol(data)])
+    lda_predict <- predict(lda_fit, data_matrix[-subset, ])
+# lda_predict <- predict(lda_fit, data[-subset, -ncol(data)])
+
 
     ## Return the predictions results and the fit
-    return(list("fit" = lda_fit, "predict" = lda_predict, "training" = subset, "data" = data))
+    return(list("fit" = lda_fit, "predict" = lda_predict, "training" = subset))
 }

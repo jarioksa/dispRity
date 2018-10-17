@@ -22,6 +22,8 @@
 # MASS, lda
 
 # stop("DEBUG lda.test")
+# source("lda.test_fun.R")
+# library(geomorph)
 # load("../tests/testthat/lda_test_data.Rda")
 # source("sanitizing.R")
 # data(plethodon)
@@ -74,11 +76,8 @@ lda.test <- function(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE, P
     ## Prior
     if(missing(prior)) {
         ## Calculate the prior later one
-        estimate_prior <- TRUE
+        prior <- FALSE
     } else {
-        ## The prior is fixed
-        estimate_prior <- FALSE
-        
         ## If only one factor is test
         if(class(factors) != "list") {
             ## Right class
@@ -121,9 +120,12 @@ lda.test <- function(data, train, prior, bootstrap, CV = FALSE, LASSO = FALSE, P
     check.class(LASSO, "logical")
     check.class(PGLS, "logical")
 
-    ## 
+    ## Run the LDA
+    lda_out <- lapply(factors, run.one.LDA, data_matrix, prior = prior, train = train, CV = CV)
 
+    run.one.LDA(factors[[1]], data_matrix, prior = prior, train = train, CV = CV)
 
+    ## Handle colinear warnings
 
 
 
