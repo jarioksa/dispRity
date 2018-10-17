@@ -93,7 +93,7 @@ factorise.subsets <- function(data) {
 }
 
 ## Run a single LDA
-run.one.lda <- function(factor, data_matrix, prior, train, CV, ..., fun.type) {
+run.one.lda <- function(factor, data_matrix, prior, train, CV, fun.type, ...) {
 
     ## First we select a subset of the dataset for training
     subset <- sample(1:nrow(data_matrix), train)
@@ -114,3 +114,13 @@ run.one.lda <- function(factor, data_matrix, prior, train, CV, ..., fun.type) {
     ## Return the predictions results and the fit
     return(list("fit" = lda_fit, "predict" = lda_predict, "training" = subset))
 }
+
+## Wrap lda runs
+run.multi.lda <- function(factor, data_matrix, prior, train, CV, fun.type, bootstraps, ...) {
+    ## Replicate the LDAs
+    return(replicate(bootstraps, run.one.lda(factor, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, ...), simplify = FALSE))
+}
+
+
+
+

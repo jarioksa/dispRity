@@ -4,17 +4,19 @@
 \alias{lda.test}
 \title{Run a discriminant analysis type}
 \usage{
-\method{lda}{test}(data, train, prior, fun.type = "linear", bootstrap,
+\method{lda}{test}(data, train, prior, type = "linear", bootstraps,
   CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...)
 }
 \arguments{
 \item{data}{A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.}
 
-\item{train}{The size of the training dataset (by default the size is @@)}
+\item{train}{The size of the training dataset.}
 
 \item{prior}{A \code{vector} of prior expectations (if missing the prior is set to the observed proportions in the training set).}
 
-\item{bootstrap}{Optional, the number of bootstrap replicates to run (is missing, no bootstraps are run).}
+\item{type}{The type of discriminant function to use: either \code{"linear"} (default), \code{"quadratic"} or any function of similar to the generic type \code{\link[MASS]{lda}}.}
+
+\item{bootstraps}{Optional, the number of bootstraps replicates to run (is missing, no bootstrapss are run).}
 
 \item{CV}{Logical, whether to perform cross-validation or not (default is \code{FALSE}).}
 
@@ -23,8 +25,6 @@
 \item{PGLS}{Logical, whether to perform a PGLS analysis.}
 
 \item{...}{Optional arguments to be passed to the discriminant function.}
-
-\item{type}{The type of discriminant function to use: either \code{"linear"} (default), \code{"quadratic"} or any function of similar to the generic type \code{\link[MASS]{lda}}.}
 }
 \description{
 Running a discriminant analysis or canonical variable analysis test on a \code{dispRity} object

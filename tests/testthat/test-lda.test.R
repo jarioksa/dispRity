@@ -82,11 +82,24 @@ test_that("lda.test works", {
     expect_error(lda.test(data = data_disparity, train = 10, prior = c(0.5, 0.5)))
     expect_error(lda.test(data = data_disparity, train = 10, prior = list(c(0.5, 0.5), c(1))))
     expect_error(lda.test(data = data_df, train = 10, type = "a"))
-    expect_error(lda.test(data = data_df, train = 10, type = mean))
+    expect_warning(expect_error(lda.test(data = data_df, train = 10, type = mean)))
     expect_error(lda.test(data = data_df, train = 10, bootstrap = "a"))
     expect_error(lda.test(data = data_df, train = 10, bootstrap = c(1,2,3)))
     expect_error(lda.test(data = data_df, train = 10, CV = "x"))
     expect_error(lda.test(data = data_df, train = 10, LASSO = "x"))
     expect_error(lda.test(data = data_df, train = 10, PGLS = "x"))
+
+    ## Running the two examples
+    test <- lda.test(data_df, train = 50, bootstraps = 7)
+    expect_is(test, c("dispRity", "lda-test"))
+    expect_equal(names(test), c("species"))
+    expect_equal(length(test[[1]]), 7)
+    expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))
+
+    expect_warning(test <- lda.test(data_disparity, train = 10, bootstraps = 5))
+    expect_is(test, c("dispRity", "lda-test"))
+    expect_equal(names(test), c("species", "morpho"))
+    expect_equal(length(test[[1]]), 5)
+    expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))    
 
 })

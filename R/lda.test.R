@@ -3,15 +3,21 @@
 #' @description Running a discriminant analysis or canonical variable analysis test on a \code{dispRity} object
 #'
 #' @param data A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.
-#' @param train The size of the training dataset (by default the size is @@@)
+#' @param train The size of the training dataset.
+
 #TODO: get a default subset size selector? Maybe something like the Silverman's rule? 
+
 #' @param prior A \code{vector} of prior expectations (if missing the prior is set to the observed proportions in the training set).
 #' @param type The type of discriminant function to use: either \code{"linear"} (default), \code{"quadratic"} or any function of similar to the generic type \code{\link[MASS]{lda}}.
-#' @param bootstrap Optional, the number of bootstrap replicates to run (is missing, no bootstraps are run).
+#' @param bootstraps Optional, the number of bootstraps replicates to run (is missing, no bootstrapss are run).
 #' @param CV Logical, whether to perform cross-validation or not (default is \code{FALSE}).
 #' @param LASSO Logical, whether to perform a LASSO analysis.
 #' @param PGLS Logical, whether to perform a PGLS analysis.
 #' @param ... Optional arguments to be passed to the discriminant function.
+
+# TODO: add a parallel option (to be applied at the wrapper level of run.multi.lda)]]
+
+
 #' 
 #' @examples
 #'
@@ -19,8 +25,6 @@
 #' 
 #' @author Thomas Guillerme
 #' @export
-
-# MASS, lda
 
 # stop("DEBUG lda.test")
 # source("lda.test_fun.R")
@@ -33,11 +37,15 @@
 # data <- geomorph.ordination(geomorph_df, ordinate = FALSE)
 
 ## Iris training
-# data <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]), species = rep(c("s","c","v"), rep(50,3)))
-# prior <- 
+# data <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]), species = rep(c("s","c","v"), rep(50,3))) 
 
+# fun.type = "linear"
+# CV = FALSE
+# LASSO = FALSE
+# PGLS = FALSE
+# bootstraps = 4
 
-lda.test <- function(data, train, prior, fun.type = "linear", bootstrap, CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...) {
+lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...) {
 
     match_call <- match.call()
 
@@ -55,6 +63,7 @@ lda.test <- function(data, train, prior, fun.type = "linear", bootstrap, CV = FA
         ## Convert into the table and factors
         data_matrix <- data[, -last_col]
         factors <- test_factor
+        names(factors) <- colnames(data)[last_col]
 
     } else {
         ## Check if the dispRity object has subsets
@@ -70,7 +79,7 @@ lda.test <- function(data, train, prior, fun.type = "linear", bootstrap, CV = FA
         data_matrix <- data$matrix
     }
 
-    ## Subsets
+    ## Train
     check.class(train, c("numeric", "integer"))
     check.length(train, 1, " must a single numeric value the number of elements to use for training.")
     if(train > nrow(data_matrix)) {
@@ -126,14 +135,13 @@ lda.test <- function(data, train, prior, fun.type = "linear", bootstrap, CV = FA
     }
 
     ## Bootstrap
-    if(!missing(bootstrap)) {
-        ## Do bootstrap
-        do_bootstrap <- TRUE
-        check.class(bootstrap, c("integer", "numeric"))
-        check.length(bootstrap, 1, " must be a single numeric value.")
+    if(!missing(bootstraps)) {
+        ## Do bootstraps
+        check.class(bootstraps, c("integer", "numeric"))
+        check.length(bootstraps, 1, " must be a single numeric value.")
     } else {
-        ## Don't bootstrap
-        do_bootstrap <- FALSE
+        ## Don't bootstraps
+        bootstraps <- 1
     }
 
     ## CV, LASSO and PGLS
@@ -141,14 +149,31 @@ lda.test <- function(data, train, prior, fun.type = "linear", bootstrap, CV = FA
     check.class(LASSO, "logical")
     check.class(PGLS, "logical")
 
-    ## Run the LDA
-    lda_out <- lapply(factors, run.one.LDA, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, ...)
-    # lda_out <- lapply(factors, run.one.LDA, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type) ; warning("DEBUG lda.test")
+    ## Run the ldas
+    lda_out <- lapply(factors, run.multi.lda, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, bootstraps = bootstraps, ...)
+    # lda_out <- lapply(factors, run.multi.lda, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, bootstraps = bootstraps)
+    
+    ## Add lda names
+    names(lda_out) <- names(factors)
+    
 
-    ## Handle colinear warnings!!!
+    #TODO: Handle lda warnings! Capture them only once and print them only once.
+
+    # lda_out structure =
+    # lda_out$factor1$bootstraps1
+    #                $bootstraps2
+    #                $bootstraps3
+    #        $factor2$bootstraps1
+    #                $bootstraps2
+    #                $bootstraps3
 
 
+    #TODO: Add the option to update models
+    #TODO: Test Cross Validation
+    #TODO: Add PGLS
+    #TODO: Add LASSO
 
-    # #TODO: Add the option to update models
-
+    ## Output the results
+    class(lda_out) <- c("dispRity", "lda.test")
+    return(lda_out)
 }
