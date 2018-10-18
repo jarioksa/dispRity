@@ -232,11 +232,12 @@ test_that("print.dispRity with model.test data", {
         ))
 })
 
-test_that("print.dispRity with lda.test data" {
+test_that("print.dispRity with lda.test data", {
 
     ## Plethodon test
     require(geomorph)
     data(plethodon)
+    load("lda_test_data.Rda")
     procrustes <- geomorph::gpagen(plethodon$land, print.progress = FALSE)
     geomorph_df <- geomorph.data.frame(procrustes, species = as.factor(lda_test_data$species), morpho = as.factor(lda_test_data$morpho))
     data_disparity <- geomorph.ordination(geomorph_df, ordinate = FALSE)
