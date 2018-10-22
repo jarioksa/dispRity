@@ -109,7 +109,54 @@ match.parameters <- function(one_param, full_param) {
     }
 }
 
+## Summary for model.test
+summary.model.test <- function(data, quantiles, cent.tend, recall, digits, match_call){
+    ## Extracting the AICs and the log likelihoods
+    base_results <- cbind(data$aic.models, "log.lik" = sapply(data$full.details, function(x) x$value))
 
+    ## Extracting the additional parameters
+    parameters <- lapply(data$full.details, function(x) x$par)
+
+    # MP: allow summaries to work on a single model
+    if(length(parameters) == 1)  {
+        param.tmp <- c(parameters[[1]])
+        #names(param.tmp) <- rownames(parameters[[1]])
+        parameters <- list(param.tmp)
+        }
+    base_results <- cbind(base_results, "param" = unlist(lapply(parameters, length)))
+    
+    ## Get the full list of parameters
+    
+       names_list <- lapply(parameters, names)
+       full_param <- unique(unlist(names_list))
+
+    output_table <- cbind(base_results, do.call(rbind, lapply(parameters, match.parameters, full_param)))
+   
+    ## Rounding
+    summary_results <- digits.fun(output_table, digits, model.test = TRUE)
+
+    return(summary_results)
+}
+
+## Summary for model.sim
+summary.model.sim <- function(data, quantiles, cent.tend, recall, digits, match_call) {
+    ## Extract the central tendencies
+    simulation_data_matrix <- sapply(data$simulation.data$sim, function(x) x$central_tendency)
+
+    ## Get the quantiles
+    simulation_results <- apply(simulation_data_matrix, 1, get.summary, cent.tend = cent.tend, quantiles = quantiles)
+    simulation_results <- cbind(do.call(rbind, lapply(simulation_results, function(X) rbind(X$cent_tend[[1]]))),
+                                do.call(rbind, lapply(simulation_results, function(X) rbind(X$quantiles))))
+    colnames(simulation_results)[1] <- as.character(match_call$cent.tend)
+
+    ## Output table
+    output_table <- cbind("subsets" = rev(data$simulation.data$fix$subsets),
+                          "n" = data$simulation.data$fix$sample_size,
+                          "var" = unname(data$simulation.data$fix$variance),
+                          simulation_results)
+    rownames(output_table) <- seq(1:nrow(output_table))
+    return(output_table)
+}
 
 
 

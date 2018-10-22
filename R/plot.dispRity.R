@@ -254,6 +254,7 @@ plot.dispRity <- function(x, ..., type, quantiles = c(50, 95), cent.tend = media
 
 
         ## Exit subclass plots
+        stop.call("", paste0("No specific plot for combined class \"dispRity\" and \"", class(data)[2], "\"."))
     }
 
     ## ----
