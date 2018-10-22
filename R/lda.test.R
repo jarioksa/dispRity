@@ -3,7 +3,7 @@
 #' @description Running a discriminant analysis or canonical variable analysis test on a \code{dispRity} object
 #'
 #' @param data A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.
-#' @param train The size of the training dataset.
+#' @param train The size of the training dataset. This can be either a single value (to apply to all factors) or a vector of values equal to the number of factors.
 
 #TODO: get a default subset size selector? Maybe something like the Silverman's rule? 
 
@@ -29,6 +29,7 @@
 # stop("DEBUG lda.test")
 # source("lda.test_fun.R")
 # library(geomorph)
+# library(dispRity)
 # load("../tests/testthat/lda_test_data.Rda")
 # source("sanitizing.R")
 # data(plethodon)
@@ -81,9 +82,13 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
 
     ## Train
     check.class(train, c("numeric", "integer"))
-    check.length(train, 1, " must a single numeric value the number of elements to use for training.")
-    if(train > nrow(data_matrix)) {
-        stop.call(msg.pre = paste0("The training set size (", train ,") cannot be bigger than the number of elements in "), call = match_call$data, msg = paste0(" (", nrow(data_matrix), ")."))
+
+    if(length(train) > 1) {
+        length_required <- length(factors)
+        check.length(train, length_required, paste0(" must be either a single numeric value to apply to all factors or a vector of numeric values equal to the number of factors (", length_required, ")."), errorif = FALSE)
+    } 
+    if(any(train > nrow(data_matrix))) {
+        stop.call(msg.pre = paste0("The training set size cannot be bigger than the number of elements in "), call = match_call$data, msg = paste0(" (", nrow(data_matrix), ")."))
     }
 
     ## Prior

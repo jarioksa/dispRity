@@ -122,8 +122,9 @@ run.multi.lda <- function(factor, data_matrix, prior, train, CV, fun.type, boots
 }
 
 ## Accuracy score
-accuracy.score <- function(lda.test) {
-        ## Get the attribution table
+accuracy.score <- function(data) {
+
+    ## Get the attribution table
     attribution_table <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
 
     # ## Get the prediction accuracy
@@ -154,6 +155,43 @@ accuracy.score <- function(lda.test) {
     # }
 
     prediction_accuracy <- mean(data$predict$class == data$data[-data$training, ncol(data$data)])
+
+    ## Return the score
+    return(prediction_accuracy)
 }
 
+## Getting a specific variable from a lda.test list
+extract.lda.test <- function(lda_test, what, where, deviation, cent.tend) {
 
+    ## Remove the calls and the factors
+    data_tmp <- lda_test
+    data_tmp$call <- NULL
+    data_tmp$factors <- NULL
+
+    get.from.bootstrap <- function(one_bootstrap, where, what) {
+        return(one_bootstrap[[where]][[what]])
+    }
+
+    get.from.factor <- function(one_factor, where, what) {
+        return(lapply(one_factor, get.from.bootstrap, where, what))
+    }
+
+    ## Get the elements
+    elements <- lapply(data_tmp, get.from.factor, where, what)
+
+    ## Make matrices
+    matrices <- lapply(elements, function(X) do.call(cbind, X))
+
+    ## Get central tendency and deviation
+    central <- lapply(matrices, function(X) apply(X, 1, cent.tend))
+    if(class(deviation) == "function") {
+        ## Deviation is a deviation
+        dev <- lapply(matrices, function(X) apply(X, 1, deviation))
+    } else {
+        ## Deviation are quantiles
+        dev <- lapply(matrices, function(X) apply(X, 1, quantile, probs = deviation))
+    }
+
+    return(list("cent.tend" = central, "deviation" = dev))
+
+}

@@ -159,6 +159,34 @@ summary.model.sim <- function(data, quantiles, cent.tend, recall, digits, match_
 }
 
 
+summary.lda.test <- function(data, quantiles, cent.tend, recall, digits, match_call) {
+
+    #$Prediction
+    #          total mean.prior sd.prior mean.factor.1.post factor.2.post
+    # factor.1 0.33  0.3333333 0.3333333 
+    # factor.2 0.3333333 0.3333333 0.3333333 
+    #TG: check if transposing the matrix is not nicer
+    #       factor.1 factor.2 factor.3
+    # total
+    # mean.prior
+    # sd.prior
+
+    #$Group_means
+    #          var1     var2    var3
+    # factor.1 0.33  0.3333333 0.3333333 
+    # factor.2 0.3333333 0.3333333 0.3333333 
+
+    #$Coefficient discriminant
+    #          LD1     LD2    L3
+    # var1 0.33  0.3333333 0.3333333 
+    # var2 0.3333333 0.3333333 0.3333333 
+
+}
+
+
+
+
+
 
 
 

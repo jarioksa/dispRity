@@ -77,6 +77,8 @@ test_that("lda.test works", {
     expect_error(lda.test(data = wrong_disparity, train = 10))
     expect_error(lda.test(data = data_df, train = "151"))
     expect_error(lda.test(data = data_df, train = 151))
+    expect_error(lda.test(data = data_df, train = c(1,2)))
+    expect_error(lda.test(data = data_disparity, train = c(10, 1000)))
     expect_error(lda.test(data = data_df, train = 10, prior = "a"))
     expect_error(lda.test(data = data_df, train = 10, prior = c(0.5, 0.5)))
     expect_error(lda.test(data = data_disparity, train = 10, prior = c(0.5, 0.5)))

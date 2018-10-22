@@ -149,6 +149,40 @@ print.dispRity <- function(x, all = FALSE, ...) {
                 cat(paste0("Tested ", ifelse(length_x > 2, "factors", "factor"), ":\n"))
                 cat("    ", paste(names(x)[-length_x], collapse = ", "), ".\n\n", sep = "")
 
+
+                # cat("Accuracy:\n")
+
+                # accuracy_vector <- 
+                # names(accuracy_vector)
+
+                #TG: below, the column > 1  should only displayed if bootstrapped
+
+                # Accuracy:
+                #                median sd
+                # species.Jord        8  0
+                # species.Teyah       8  1
+                # morpho.group1       8  1
+
+                #TG: or (non bootstrapped)
+                # Accuracy:
+                # species.Jord        8 
+                # species.Teyah       8 
+                # morpho.group1       8 
+
+                #TG: This should be in lda_test$accuracy
+
+
+                #TG: same below
+                
+                # Proportion of trace:
+                # species.LD1 = 0.8
+                # species.LD2 = 0.8
+
+                #TG: This should be in lda_test$prop.trace
+
+
+
+
                 cat("Fit:\n")
                 cat("@@@@ TO ADD RESULTS MINI SUMMARY\n")
                 cat("Use summary.dispRity() or plot.dispRity() for displaying the full results.\n")
