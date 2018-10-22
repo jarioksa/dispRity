@@ -434,6 +434,190 @@ plot.model.test.support <- function(data, col, ylab, ylim, ...) {
     plotcoords <- graphics::barplot(ordered_aic, col = col, ylim = ylim, ylab = ylab, ...)
 }
 
+## Plotting dtt results
+plot.dtt <- function(data, quantiles, cent.tend, ylim, xlab, ylab, col, density, ...) {
+
+    ## Silence warnings
+    options(warn = -1)
+
+    ## Get the ylim
+    if(missing(ylim)) {
+        ylim <- c(range(pretty(data$dtt)))
+
+        if(!is.null(data$sim)) {
+            ylim_sim <- range(data$sim)
+            ylim <- range(c(ylim, ylim_sim))
+        }
+    }
+
+    if(missing(xlab)) {
+        xlab <- "relative time"
+    }
+    if(missing(ylab)) {
+        ylab <- "scaled disparity"
+    }
+
+    if(missing(col)) {
+        colfun <- grDevices::colorRampPalette(c("lightgrey", "grey"))
+        col <- c("black", colfun(length(quantiles)))
+    }
+
+    ## Plot the relative disparity curve
+    plot(data$times, data$dtt, xlab = xlab, ylab = ylab, ylim = ylim, type = "n", ...)
+    #plot(data$times, data$dtt, xlab = xlab, ylab = ylab, ylim = ylim, type = "n") ; warning("DEBUG plot")
+
+    if(!is.null(data$sim)) {
+
+        ## Check the quantiles
+        check.class(quantiles, "numeric", " must be any value between 1 and 100.")
+        ## Are quantiles probabilities or proportions ?
+        if(any(quantiles < 1)) {
+            ## Transform into proportion
+            quantiles <- quantiles*100
+        }
+        ## Are quantiles proper proportions
+        if(any(quantiles < 0) | any(quantiles > 100)) {
+            stop.call("", "quantiles(s) must be any value between 0 and 100.")
+        }
+        quantiles_n <- length(quantiles)
+
+        ## Check the central tendency
+        check.class(cent.tend, "function")
+        ## The function must work
+        if(make.metric(cent.tend, silent = TRUE) != "level1") {
+            stop.call("", "cent.tend argument must be a function that outputs a single numeric value.")
+        }
+
+
+        ## Summarised data
+        quantiles_values <- apply(data$sim, 1, quantile, probs = CI.converter(quantiles))
+        cent_tend_values <- apply(data$sim, 1, cent.tend)
+
+        ## Plotting the polygons for each quantile
+        for (cis in 1:quantiles_n) {
+            xx <- c(data$times, rev(data$times))
+            yy <- c(quantiles_values[(quantiles_n*2) - (cis-1), ], rev(quantiles_values[cis ,]))
+            graphics::polygon(xx, yy, col = col[cis+1],  border = FALSE, density = density)
+        }
+
+
+        ## Add the central tendency
+        graphics::lines(data$times, cent_tend_values, col = col[1], lty = 2)
+    }
+
+    ## Add the observed disparity
+    graphics::lines(data$times, data$dtt, col = col[1], lwd = 1.5)
+
+    ## Re-enable warnings
+    options(warn = 0)
+}
+
+## Plotting lda.test results
+plot.lda.test <- function(data, ..., plot = TRUE, legend = TRUE, leg.pos = "topright") {
+
+    ## dots arguments
+    dots <- list(...)
+
+    ## Get the classes
+    classes <- levels(data$data[, ncol(data$data)])
+
+    ## Handle the optional arguments
+    if(plot) {
+        if(is.null(dots$col)) {
+            dots$col <- grDevices::gray.colors(3)
+        }
+        if(is.null(dots$xlab)) {
+            dots$xlab <- "Classes"
+        }
+        if(is.null(dots$ylab)) {
+            dots$ylab <- "Proportional attributions"
+        }
+        if(is.null(dots$xlim)) {
+            dots$xlim <- c(1:length(classes))
+        }
+        if(is.null(dots$ylim)) {
+            dots$ylim <- c(0,1)
+        }
+    }
+
+    ## Get the attribution table
+    attribution_table <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
+
+    # ## Get the prediction accuracy
+    # get.accuracy <- function(data, attribution_table, scale = scale.accuracy) {
+    #     if(!scale) {
+    #         ## Return the average number of correct predictions
+    #         return(sum(diag(attribution_table))/sum(attribution_table))
+    #     } else {
+    #         ## Return the number of scaled correct predictions
+    #         obs_class_proportion <- table(data$data[, ncol(data$data)])
+    #         obs_class_proportion <- obs_class_proportion/sum(obs_class_proportion)
+
+    #         obs_class_proportion <- c(0.333, 0.333, 0.333)            
+
+    #         sum(diag(attribution_table)/obs_class_proportion)
+
+    #         /(sum(attribution_table))
+
+    #         sum(attribution_table*obs_class_proportion)
+
+    #         test <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
+
+    #         sum(diag(attribution_table))/sum(attribution_table)
+
+    #         predict_rand1 <- which(data$predict$class == "random1")
+    #         (data$predict$class[predict_rand1] == data$data[-data$training, ncol(data$data)][predict_rand1])
+    #     }
+    # }
+
+    prediction_accuracy <- mean(data$predict$class == data$data[-data$training, ncol(data$data)])
+
+    if(plot) {
+        ## Get list of posteriors
+        posteriors <- data.frame(data$predict)
+
+        ## Get the proportion of right classification per class
+        ## Get one list of proportions
+        get.proportions <- function(class_ID, posteriors, classes) {
+            proportion <- apply(posteriors[which(posteriors$class == classes[class_ID]),
+                                2:(length(classes)+1)], 2, mean)
+            names(proportion) <- paste0("post.", classes)
+            return(proportion)
+        }
+
+        ## Get the proportion for each posterior
+        proportions <- lapply(as.list(1:length(classes)), get.proportions, posteriors, classes)
+        names(proportions) <- classes
+
+        ## Adding the accuracy to the main
+        main_accuracy <- paste0("Accuracy = ", round(prediction_accuracy*100, 2), "%")
+        
+        #TG: TODO Make the plot addling more flexible
+        if(!is.null(dots$main)) {
+            dots$main <- paste0(dots$main, " (", main_accuracy, ")")
+        } else {
+            dots$main <- main_accuracy
+        }
+
+        ## Plotting the proportions
+        plot_table <- as.matrix(data.frame(proportions))
+
+        barplot(plot_table, main = dots$main, col = dots$col, xlab = dots$xlab, ylab = dots$ylab,
+                ylim = dots$ylim, beside = FALSE)
+        
+        if(legend) {
+            legend(x = leg.pos, legend = classes, col = dots$col, pch = 15, bg = "white")
+        }
+
+    
+    } else {
+
+        ## Return the attribution table
+        return(list("attribution" = attribution_table, "accuracy" = prediction_accuracy))
+    }
+}
+
+
 # ~~~~~~~~~~
 # sequential.test plots
 # ~~~~~~~~~~

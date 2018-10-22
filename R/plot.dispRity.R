@@ -166,84 +166,15 @@ plot.dispRity <- function(x, ..., type, quantiles = c(50, 95), cent.tend = media
                 plot.randtest(data[[1]], nclass = nclass, coeff = coeff, ...)
                 ## plot.randtest(data[[model]], nclass = nclass, coeff = coeff) ; warning("DEBUG: plot")
             }
+            return(invisible())
         }
 
         ## dtt plots (from https://github.com/mwpennell/geiger-v2/blob/master/R/disparity.R)
         if(class(data)[[1]] == "dispRity" && class(data)[[2]] == "dtt") {
 
-            ## Silence warnings
-            options(warn = -1)
-
-            ## Get the ylim
-            if(missing(ylim)) {
-                ylim <- c(range(pretty(data$dtt)))
-
-                if(!is.null(data$sim)) {
-                    ylim_sim <- range(data$sim)
-                    ylim <- range(c(ylim, ylim_sim))
-                }
-            }
-
-            if(missing(xlab)) {
-                xlab <- "relative time"
-            }
-            if(missing(ylab)) {
-                ylab <- "scaled disparity"
-            }
-
-            if(missing(col)) {
-                colfun <- grDevices::colorRampPalette(c("lightgrey", "grey"))
-                col <- c("black", colfun(length(quantiles)))
-            }
-
-            ## Plot the relative disparity curve
-            plot(data$times, data$dtt, xlab = xlab, ylab = ylab, ylim = ylim, type = "n", ...)
-            #plot(data$times, data$dtt, xlab = xlab, ylab = ylab, ylim = ylim, type = "n") ; warning("DEBUG plot")
-
-            if(!is.null(data$sim)) {
-
-                ## Check the quantiles
-                check.class(quantiles, "numeric", " must be any value between 1 and 100.")
-                ## Are quantiles probabilities or proportions ?
-                if(any(quantiles < 1)) {
-                    ## Transform into proportion
-                    quantiles <- quantiles*100
-                }
-                ## Are quantiles proper proportions
-                if(any(quantiles < 0) | any(quantiles > 100)) {
-                    stop.call("", "quantiles(s) must be any value between 0 and 100.")
-                }
-                quantiles_n <- length(quantiles)
-
-                ## Check the central tendency
-                check.class(cent.tend, "function")
-                ## The function must work
-                if(make.metric(cent.tend, silent = TRUE) != "level1") {
-                    stop.call("", "cent.tend argument must be a function that outputs a single numeric value.")
-                }
-
-
-                ## Summarised data
-                quantiles_values <- apply(data$sim, 1, quantile, probs = CI.converter(quantiles))
-                cent_tend_values <- apply(data$sim, 1, cent.tend)
-
-                ## Plotting the polygons for each quantile
-                for (cis in 1:quantiles_n) {
-                    xx <- c(data$times, rev(data$times))
-                    yy <- c(quantiles_values[(quantiles_n*2) - (cis-1), ], rev(quantiles_values[cis ,]))
-                    polygon(xx, yy, col = col[cis+1],  border = FALSE, density = density)
-                }
-
-
-                ## Add the central tendency
-                lines(data$times, cent_tend_values, col = col[1], lty = 2)
-            }
-
-            ## Add the observed disparity
-            lines(data$times, data$dtt, col = col[1], lwd = 1.5)
-
-            ## Re-enable warnings
-            options(warn = 0)
+            ## Plot the dtt
+            plot.dtt(data = data, quantiles = quantiles, cent.tend = cent.tend, ylim, xlab, ylab, col, density, ...)
+            return(invisible())
         } 
 
         if(class(data)[[1]] == "dispRity" && class(data)[[2]] == "model.test") {
@@ -264,6 +195,7 @@ plot.dispRity <- function(x, ..., type, quantiles = c(50, 95), cent.tend = media
 
             ## Plotting the model support
             plot.model.test.support(data = data, col = col, ylab = ylab, ylim = ylim, ...)
+            return(invisible())
         }
         
         if(class(data)[[1]] == "dispRity" && class(data)[[2]] == "model.sim") {
@@ -313,10 +245,15 @@ plot.dispRity <- function(x, ..., type, quantiles = c(50, 95), cent.tend = media
 
             ## Plotting the model
             plot_details <- plot.continuous(summarised_data, rarefaction = FALSE, is_bootstrapped = TRUE, is_distribution = TRUE, ylim, xlab, ylab, col, time_slicing = summarised_data$subsets, observed = FALSE, obs_list_arg = NULL, add, density, ...)
+            return(invisible())
         }
         
+        if(class(data)[[1]] == "dispRity" && class(data)[[2]] == "lda.test") {
+            return(invisible())
+        }
+
+
         ## Exit subclass plots
-        return(invisible())
     }
 
     ## ----

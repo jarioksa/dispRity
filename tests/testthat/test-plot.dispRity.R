@@ -228,5 +228,22 @@ test_that("plot subclasses works", {
     expect_error(plot(dispRity_dtt, quantiles = c(10, 110)))
     expect_error(plot(dispRity_dtt, cent.tend = var))
 
+    ## lda.test
+    require(geomorph)
+    data(plethodon)
+    load("lda_test_data.Rda")
+    procrustes <- geomorph::gpagen(plethodon$land, print.progress = FALSE)
+    geomorph_df <- geomorph.data.frame(procrustes, species = as.factor(lda_test_data$species), morpho = as.factor(lda_test_data$morpho))
+    data_disparity <- geomorph.ordination(geomorph_df, ordinate = FALSE)
+
+    expect_warning(test <- lda.test(data_disparity, train = 10))
+
+    print_test <- capture.output(test)
+
+
+    expect_equal(print_test[1],
+        c("Discriminant test:")
+        )
 
 })
+

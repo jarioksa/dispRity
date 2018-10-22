@@ -121,6 +121,39 @@ run.multi.lda <- function(factor, data_matrix, prior, train, CV, fun.type, boots
     return(replicate(bootstraps, run.one.lda(factor, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, ...), simplify = FALSE))
 }
 
+## Accuracy score
+accuracy.score <- function(lda.test) {
+        ## Get the attribution table
+    attribution_table <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
 
+    # ## Get the prediction accuracy
+    # get.accuracy <- function(data, attribution_table, scale = scale.accuracy) {
+    #     if(!scale) {
+    #         ## Return the average number of correct predictions
+    #         return(sum(diag(attribution_table))/sum(attribution_table))
+    #     } else {
+    #         ## Return the number of scaled correct predictions
+    #         obs_class_proportion <- table(data$data[, ncol(data$data)])
+    #         obs_class_proportion <- obs_class_proportion/sum(obs_class_proportion)
+
+    #         obs_class_proportion <- c(0.333, 0.333, 0.333)            
+
+    #         sum(diag(attribution_table)/obs_class_proportion)
+
+    #         /(sum(attribution_table))
+
+    #         sum(attribution_table*obs_class_proportion)
+
+    #         test <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
+
+    #         sum(diag(attribution_table))/sum(attribution_table)
+
+    #         predict_rand1 <- which(data$predict$class == "random1")
+    #         (data$predict$class[predict_rand1] == data$data[-data$training, ncol(data$data)][predict_rand1])
+    #     }
+    # }
+
+    prediction_accuracy <- mean(data$predict$class == data$data[-data$training, ncol(data$data)])
+}
 
 
