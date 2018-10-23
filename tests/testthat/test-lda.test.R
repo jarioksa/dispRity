@@ -54,6 +54,94 @@ test_that("run.one.lda works", {
 
 })
 
+
+test_that("extract.lda.test works" ,{
+
+    lda_test <- lda_test_data$lda_test
+
+    ## Works with sd
+    test <- extract.lda.test(lda_test, what = "prior", where = "fit", deviation = sd, cent.tend = mean)
+
+    expect_is(test, "list")
+    expect_equal(names(test), c("cent.tend", "deviation"))
+    expect_equal(names(test[[1]]), c("species", "morpho"))
+
+    expect_equal(test$cent.tend$species, c("Jord" = 0.5, "Teyah" = 0.5))
+    expect_equal(round(test$deviation$species, digits = 7), c("Jord" = 0.2645751, "Teyah" = 0.2645751))
+    expect_equal(round(test$cent.tend$morpho, digits = 7), c("group1" = 0.2666667, "group2" = 0.3333333, "group3" = 0.4000000))
+    expect_equal(round(test$deviation$morpho, digits = 8),c("group1" = 0.20816660, "group2" = 0.05773503, "group3" = 0.17320508))
+
+    ## Works with means
+    test <- extract.lda.test(lda_test, what = "x", where = "predict", deviation = c(0.05, 0.95), cent.tend = mean)
+
+    expect_is(test, "list")
+    expect_equal(names(test), c("cent.tend", "deviation"))
+    expect_equal(names(test[[1]]), c("species", "morpho"))
+
+    expect_equal(length(test$cent.tend$species), 30)
+    expect_equal(dim(test$deviation$species), c(2,30))
+    expect_equal(length(test$cent.tend$morpho), 30)
+    expect_equal(dim(test$deviation$morpho), c(2,30))
+
+    ## Works without arguments
+    test <- extract.lda.test(lda_test, what = "class", where = "predict")
+    expect_is(test, "list")
+    expect_equal(names(test), c("species", "morpho"))
+    expect_equal(levels(unlist(c(test[[1]]))), c("Jord", "Teyah"))
+    expect_equal(levels(unlist(c(test[[2]]))), c("group1", "group2", "group3"))
+
+    ## Works without what or where
+    test1 <- extract.lda.test(lda_test, where = "training")
+    test2 <- extract.lda.test(lda_test, what = "training")
+
+    expect_equal(names(test1), names(test2))
+    expect_equal(test1[[1]], test2[[1]])
+    expect_equal(test1[[2]], test2[[2]])
+
+    ## Works with just the cent.tend
+    test1 <- extract.lda.test(lda_test, what = "means", where = "fit", cent.tend = sd)
+    expect_equal(round(test1$cent.tend$species, digits = 7), c("Jord" = 0.2056696, "Teyah" = 0.2056992))
+    expect_equal(round(test1$cent.tend$morpho, digits = 7), c("group1" = 0.2060365, "group2" = 0.2060382, "group3" = 0.2057907))
+
+    ## Works just with the deviation
+    test2 <- extract.lda.test(lda_test, what = "means", where = "fit", deviation = sd)
+    expect_equal(test1$cent.tend$species, test2$deviation$species)
+    expect_equal(test1$cent.tend$morpho, test2$deviation$morpho)
+})
+
+
+test_that("accuracy.score works" ,{
+
+    lda_test <- lda_test_data$lda_test
+    prediction <- lda_test[[1]][[1]]$predict$class
+    un_trained <- lda_test$factors[[1]][-lda_test[[1]][[1]]$training]
+
+    ## Works by default
+    expect_equal(round(accuracy.score(prediction, un_trained, return.table = FALSE), 7), 0.5666667)
+    expect_is(accuracy.score(prediction, un_trained, return.table = TRUE), "table")
+    expect_equal(accuracy.score(prediction, un_trained, return.table = TRUE), table(prediction, un_trained))
+})
+
+
+
+test_that("apply.accuracy.score works" ,{
+
+    lda_test <- lda_test_data$lda_test
+
+    ## Works by default
+    test1 <- apply.accuracy.score(lda_test)
+    expect_equal(names(test1), names(lda_test)[1:2])
+    expect_equal(unique(unlist(lapply(test1, length))), 3)
+    expect_equal(round(test1[[1]], 7), c("1" = 0.5666667, "2" = 0.6666667, "3" =0.7000000))
+    expect_equal(round(test1[[2]], 7), c("1" = 0.6666667, "2" = 0.7666667, "3" =0.6666667))
+
+    test1 <- apply.accuracy.score(lda_test, return.table = TRUE)
+    expect_equal(names(test1), names(lda_test)[1:2])
+    expect_equal(lapply(test1, length), list("species" = 3, "morpho" = 3))
+    expect_equal(unique(unlist(lapply(test1, lapply, class))), "table")
+})
+
+
 ## Test
 test_that("lda.test works", {
 
@@ -94,13 +182,13 @@ test_that("lda.test works", {
     ## Running the two examples
     test <- lda.test(data_df, train = 50, bootstraps = 7)
     expect_is(test, c("dispRity", "lda-test"))
-    expect_equal(names(test), c("species", "call"))
+    expect_equal(names(test), c("species", "call", "factors"))
     expect_equal(length(test[[1]]), 7)
     expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))
 
     expect_warning(test <- lda.test(data_disparity, train = 10, bootstraps = 5))
     expect_is(test, c("dispRity", "lda-test"))
-    expect_equal(names(test), c("species", "morpho", "call"))
+    expect_equal(names(test), c("species", "morpho", "call", "factors"))
     expect_equal(length(test[[1]]), 5)
     expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))    
 

@@ -146,14 +146,12 @@ print.dispRity <- function(x, all = FALSE, ...) {
                 cat(paste0("Call: ", as.expression(x$call), " \n\n"))
                 ## Factors
                 length_x <- length(x)
-                cat(paste0("Tested ", ifelse(length_x > 2, "factors", "factor"), ":\n"))
-                cat("    ", paste(names(x)[-length_x], collapse = ", "), ".\n\n", sep = "")
+                cat(paste0("Tested ", ifelse(length_x > 3, "factors", "factor"), ":\n"))
+                cat("    ", paste(names(x)[-c(length_x, length_x-1)], collapse = ", "), ".\n\n", sep = "")
 
-
-                # cat("Accuracy:\n")
-
-                # accuracy_vector <- 
-                # names(accuracy_vector)
+                cat("Overall accuracy:\n")
+                accuracy_vector <- apply.accuracy.score(x)
+                
 
                 #TG: below, the column > 1  should only displayed if bootstrapped
 

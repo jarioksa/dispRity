@@ -36,6 +36,7 @@
 # procrustes <- geomorph::gpagen(plethodon$land)
 # geomorph_df <- geomorph.data.frame(procrustes, species = as.factor(lda_test_data$species), morpho = as.factor(lda_test_data$morpho))
 # data <- geomorph.ordination(geomorph_df, ordinate = FALSE)
+# lda_test <- lda.test(data, train = 10, bootstraps = 3)
 
 ## Iris training
 # data <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]), species = rep(c("s","c","v"), rep(50,3))) 
@@ -180,6 +181,7 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
 
     ## Output the results
     lda_out$call <- match_call
+    lda_out$factors <- factors
     class(lda_out) <- c("dispRity", "lda.test")
     return(lda_out)
 }

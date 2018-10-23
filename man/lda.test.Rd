@@ -10,7 +10,7 @@
 \arguments{
 \item{data}{A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.}
 
-\item{train}{The size of the training dataset.}
+\item{train}{The size of the training dataset. This can be either a single value (to apply to all factors) or a vector of values equal to the number of factors.}
 
 \item{prior}{A \code{vector} of prior expectations (if missing the prior is set to the observed proportions in the training set).}
 

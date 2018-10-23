@@ -122,10 +122,11 @@ run.multi.lda <- function(factor, data_matrix, prior, train, CV, fun.type, boots
 }
 
 ## Accuracy score
-accuracy.score <- function(data) {
+accuracy.score <- function(prediction, un_trained, factors, return.table) {
 
-    ## Get the attribution table
-    attribution_table <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
+    if(return.table) {
+        return(table(prediction, un_trained))
+    }
 
     # ## Get the prediction accuracy
     # get.accuracy <- function(data, attribution_table, scale = scale.accuracy) {
@@ -154,7 +155,7 @@ accuracy.score <- function(data) {
     #     }
     # }
 
-    prediction_accuracy <- mean(data$predict$class == data$data[-data$training, ncol(data$data)])
+    prediction_accuracy <- mean(prediction == un_trained)
 
     ## Return the score
     return(prediction_accuracy)
@@ -169,6 +170,13 @@ extract.lda.test <- function(lda_test, what, where, deviation, cent.tend) {
     data_tmp$factors <- NULL
 
     get.from.bootstrap <- function(one_bootstrap, where, what) {
+        if(missing(what)) {
+            return(one_bootstrap[[where]])
+        } 
+        if(missing(where)) {
+            return(one_bootstrap[[what]])
+        }
+
         return(one_bootstrap[[where]][[what]])
     }
 
@@ -180,18 +188,75 @@ extract.lda.test <- function(lda_test, what, where, deviation, cent.tend) {
     elements <- lapply(data_tmp, get.from.factor, where, what)
 
     ## Make matrices
-    matrices <- lapply(elements, function(X) do.call(cbind, X))
+    if(all(unlist(lapply(elements, lapply, class)) == "factor")) {
+        ## The matrix is a dataframe
+        data.frame.no.names <- function(X) {
+            data_frame <- data.frame(X)
+            colnames(data_frame) <- seq(1:ncol(data_frame))
+            return(data_frame)
+        }
+        matrices <- lapply(elements, data.frame.no.names)
+    } else {
+        ## The matrix is a matrix...
+        matrices <- lapply(elements, function(X) do.call(cbind, X))
+    }
 
     ## Get central tendency and deviation
-    central <- lapply(matrices, function(X) apply(X, 1, cent.tend))
-    if(class(deviation) == "function") {
-        ## Deviation is a deviation
-        dev <- lapply(matrices, function(X) apply(X, 1, deviation))
-    } else {
-        ## Deviation are quantiles
-        dev <- lapply(matrices, function(X) apply(X, 1, quantile, probs = deviation))
+    if(!missing(cent.tend)){
+        central <- lapply(matrices, function(X) apply(X, 1, cent.tend))
+    }
+    
+    if(!missing(deviation)){
+        if(class(deviation) == "function") {
+            ## Deviation is a deviation
+            dev <- lapply(matrices, function(X) apply(X, 1, deviation))
+        } else {
+            ## Deviation are quantiles
+            dev <- lapply(matrices, function(X) apply(X, 1, quantile, probs = deviation))
+        }
+    }
+
+    if(missing(cent.tend) && missing(deviation)) {
+        return(matrices)
+    }
+
+    if(missing(cent.tend) && !missing(deviation)) {
+        return(list("deviation" = dev))
+    }
+
+    if(!missing(cent.tend) && missing(deviation)) {
+        return(list("cent.tend" = central))
     }
 
     return(list("cent.tend" = central, "deviation" = dev))
 
+}
+
+## Applying the accuracy score to a whole lda-test object
+apply.accuracy.score <- function(lda_test, return.table = FALSE) {
+    ## Function for converting the training table in factors
+    convert.untrained <- function(element, classes, trainings, factors) {
+        table_train <- as.data.frame(replicate(ncol(trainings[[element]]), factors[[element]]))
+        table_train <- as.data.frame(sapply(1:ncol(table_train), function(col, table_train, trainings, element) return(table_train[-trainings[[element]][,col],col]), table_train, trainings, element))
+        return(table_train)
+    }
+
+    ## Get the classes
+    classes <- extract.lda.test(lda_test, what = "class", where = "predict")
+    ## Get the trainings
+    trainings <- extract.lda.test(lda_test, what = "training")
+    untrains <- sapply(1:length(classes), convert.untrained, classes, trainings, lda_test$factors, simplify = FALSE)
+    names(untrains) <- names(classes)
+
+    ## Apply the accuracy score on all all bootstraps and all factors
+    mapply.accuracy <- function(element, classes, untrains, factors, return.table) {
+        if(return.table) {
+            return(mapply(accuracy.score, classes[[element]], untrains[[element]], MoreArgs = list(factors = factors[[element]], return.table = return.table), SIMPLIFY = FALSE))
+        } else {
+            return(mapply(accuracy.score, classes[[element]], untrains[[element]], MoreArgs = list(factors = factors[[element]], return.table = return.table)))
+        }
+    }
+    output <- lapply(1:length(classes), mapply.accuracy, classes, untrains, lda_test$factors, return.table)
+    names(output) <- names(classes)
+    return(output)
 }
