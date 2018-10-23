@@ -143,46 +143,40 @@ print.dispRity <- function(x, all = FALSE, ...) {
 
                 ## Tested lda
                 cat("Discriminant test:\n")
-                cat(paste0("Call: ", as.expression(x$call), " \n\n"))
+                cat(paste0("Call: ", as.expression(x$support$call), " \n\n"))
                 ## Factors
-                length_x <- length(x)
-                cat(paste0("Tested ", ifelse(length_x > 3, "factors", "factor"), ":\n"))
-                cat("    ", paste(names(x)[-c(length_x, length_x-1)], collapse = ", "), ".\n\n", sep = "")
+                # length_x <- length(x)
+                # cat(paste0("Tested ", ifelse(length_x > 3, "factors", "factor"), ":\n"))
+                # cat("    ", paste(names(x)[-c(length_x, length_x-1)], collapse = ", "), ".\n\n", sep = "")
 
+                ## Check the bootstraps (formalise!)
+                #TODO: formalise!
+                is_bootstrapped <- ifelse(length(x$support$bootstraps) > 1, TRUE, FALSE)
+
+                ## Function for printing the tables
+                print.table <- function(x, what, is_bootstrapped, rounding = 3) {
+                    if(is_bootstrapped) {
+                        print_df <- data.frame(cbind(
+                            "median" = lapply(lapply(x$support[[what]], median), round, digits = rounding),
+                                "sd" = lapply(lapply(x$support[[what]], sd), round, digits = rounding)))
+                    } else {
+                        print_df <- t(as.data.frame(lapply(x$support[[what]], round, digits = rounding)))
+                        colnames(print_df_accuracy) <- ""
+                    }
+                    print(print_df)
+                    return(invisible())
+                }
+
+                ## Accuracy
                 cat("Overall accuracy:\n")
-                accuracy_vector <- apply.accuracy.score(x)
-                
+                print.table(x, "accuracy", is_bootstrapped)
+                cat("\n\n")
 
-                #TG: below, the column > 1  should only displayed if bootstrapped
+                # ## Trace
+                # cat("Proportion of trace:\n")
+                # print.table(x, "prop.trace", is_bootstrapped)
+                # cat("\n\n")
 
-                # Accuracy:
-                #                median sd
-                # species.Jord        8  0
-                # species.Teyah       8  1
-                # morpho.group1       8  1
-
-                #TG: or (non bootstrapped)
-                # Accuracy:
-                # species.Jord        8 
-                # species.Teyah       8 
-                # morpho.group1       8 
-
-                #TG: This should be in lda_test$accuracy
-
-
-                #TG: same below
-                
-                # Proportion of trace:
-                # species.LD1 = 0.8
-                # species.LD2 = 0.8
-
-                #TG: This should be in lda_test$prop.trace
-
-
-
-
-                cat("Fit:\n")
-                cat("@@@@ TO ADD RESULTS MINI SUMMARY\n")
                 cat("Use summary.dispRity() or plot.dispRity() for displaying the full results.\n")
                 return()
             }

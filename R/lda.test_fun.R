@@ -166,8 +166,7 @@ extract.lda.test <- function(lda_test, what, where, deviation, cent.tend) {
 
     ## Remove the calls and the factors
     data_tmp <- lda_test
-    data_tmp$call <- NULL
-    data_tmp$factors <- NULL
+    data_tmp$support <- NULL
 
     get.from.bootstrap <- function(one_bootstrap, where, what) {
         if(missing(what)) {
@@ -245,7 +244,7 @@ apply.accuracy.score <- function(lda_test, return.table = FALSE) {
     classes <- extract.lda.test(lda_test, what = "class", where = "predict")
     ## Get the trainings
     trainings <- extract.lda.test(lda_test, what = "training")
-    untrains <- sapply(1:length(classes), convert.untrained, classes, trainings, lda_test$factors, simplify = FALSE)
+    untrains <- sapply(1:length(classes), convert.untrained, classes, trainings, lda_test$support$factors, simplify = FALSE)
     names(untrains) <- names(classes)
 
     ## Apply the accuracy score on all all bootstraps and all factors
@@ -256,7 +255,7 @@ apply.accuracy.score <- function(lda_test, return.table = FALSE) {
             return(mapply(accuracy.score, classes[[element]], untrains[[element]], MoreArgs = list(factors = factors[[element]], return.table = return.table)))
         }
     }
-    output <- lapply(1:length(classes), mapply.accuracy, classes, untrains, lda_test$factors, return.table)
+    output <- lapply(1:length(classes), mapply.accuracy, classes, untrains, lda_test$support$factors, return.table)
     names(output) <- names(classes)
     return(output)
 }

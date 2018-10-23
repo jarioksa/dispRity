@@ -179,9 +179,57 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
     #TODO: Add PGLS
     #TODO: Add LASSO
 
+    ## Add the support element
+    lda_out$support <- list()
+
+    ## Get the call
+    lda_out$support$call <- match_call
+    ## Get the bootstraps
+    lda_out$support$bootstraps <- bootstraps
+    ## Get the factors
+    lda_out$support$factors <- factors
+    ## Get the overall accuracy
+    lda_out$support$accuracy <- apply.accuracy.score(lda_out)
+    ## Get the overall fit
+    #lda_out$support$prop.trace <- extract.lda.test(lda_out, what = "")
+
+#     svd_list <- extract.lda.test(lda_out, what = "svd", where = "fit")
+#     get.prop.trace <- function(svd) {
+#         svd^2/sum(svd^2)
+#     }
+#     lapply(svd_list, function(X) return(apply(X, 2, get.prop.trace))) # Check the MARGIN
+    
+
+# print.lda <- function(x, ...)
+# {
+#     if(!is.null(cl <- x$call)) {
+#         names(cl)[2L] <- ""
+#         cat("Call:\n")
+#         dput(cl, control = NULL)
+#     }
+#     cat("\nPrior probabilities of groups:\n")
+#     print(x$prior, ...)
+#     cat("\nGroup means:\n")
+#     print(x$means, ...)
+#     cat("\nCoefficients of linear discriminants:\n")
+#     print(x$scaling, ...)
+    
+#     svd <- x$svd
+    
+#     names(svd) <- dimnames(x$scaling)[[2L]]
+    
+#     if(length(svd) > 1L) {
+#         cat("\nProportion of trace:\n")
+#         print(round(svd^2/sum(svd^2)), ...)
+#     }
+    
+#     invisible(x)
+# }
+
+
+
+
     ## Output the results
-    lda_out$call <- match_call
-    lda_out$factors <- factors
     class(lda_out) <- c("dispRity", "lda.test")
     return(lda_out)
 }
