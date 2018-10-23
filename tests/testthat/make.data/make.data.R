@@ -151,5 +151,11 @@ morpho_class <- c(rep("group1", 10), rep("group2", 10), rep("group3", 20))
 ## Random classifier
 random_class <- sample(c("random1", "random2", "random3"), 40, replace = TRUE) 
 
-lda_test_data <- list("procrustes" = procrustes_matrix, "species" = species_class, "morpho" = morpho_class, "random" = random_class)
+## test lda objects
+geomorph_df <- geomorph.data.frame(procrustes, species = as.factor(lda_test_data$species), morpho = as.factor(lda_test_data$morpho))
+data <- geomorph.ordination(geomorph_df, ordinate = FALSE)
+lda_test <- lda.test(data, train = 10, bootstraps = 3)
+
+lda_test_data <- list("procrustes" = procrustes_matrix, "species" = species_class, "morpho" = morpho_class, "random" = random_class, "lda_test" = lda_test)
+
 save(lda_test_data, file = "../lda_test_data.Rda")
