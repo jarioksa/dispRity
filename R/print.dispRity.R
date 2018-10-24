@@ -59,8 +59,6 @@ print.dispRity <- function(x, all = FALSE, ...) {
         ## ~~~~~~~
         ## Composite dispRity objects (subclasses)
         ## ~~~~~~~
-
-
         if(length(class(x)) > 1) {
             ## randtest
             if(class(x)[2] == "randtest") {
@@ -154,40 +152,60 @@ print.dispRity <- function(x, all = FALSE, ...) {
                 is_bootstrapped <- ifelse(x$support$bootstraps > 1, TRUE, FALSE)
 
                 ## Function for printing the tables
-                print.table <- function(x, what, is_bootstrapped, rounding = 3) {
+                print.table.accuracy <- function(x, is_bootstrapped, rounding = 3) {
                     if(is_bootstrapped) {
                         print_df <- data.frame(cbind(
-                            "median" = lapply(lapply(x$support[[what]], median), round, digits = rounding),
-                                "sd" = lapply(lapply(x$support[[what]], sd), round, digits = rounding)))
+                            "median" = lapply(lapply(x$support$accuracy, median), round, digits = rounding),
+                                "sd" = lapply(lapply(x$support$accuracy, sd), round, digits = rounding)))
                     } else {
-                        print_df <- t(as.data.frame(lapply(x$support[[what]], round, digits = rounding)))
+                        print_df <- t(as.data.frame(lapply(x$support$accuracy, round, digits = rounding)))
                         colnames(print_df) <- ""
                     }
                     print(print_df)
                     return(invisible())
                 }
 
+                print.table.prop.trace <- function(x, is_bootstrapped, rounding = 3) {
+                    apply.fun <- function(one_factor, fun, rounding){
+                        return(apply(one_factor, 1, function(one_factor, fun, rounding) round(fun(one_factor), digits = rounding), fun, rounding))
+                    }
+                    merge.and.name <- function(x,y, names = c("median", "sd")) {
+                        output <- rbind(x, y)
+                        rownames(output) <- names
+                        return(output)
+                    }
+
+                    if(is_bootstrapped) {
+                        ## Get the medians and sds and merge them
+                        medians <- lapply(x$support$prop.trace, apply.fun, median, rounding)
+                        sds <- lapply(x$support$prop.trace, apply.fun, sd, rounding)
+                        print_df <- lapply(mapply(merge.and.name, medians, sds, SIMPLIFY = FALSE), t)
+                    } else {
+                        print_df <- lapply(x$support$prop.trace, function(x, rounding) {colnames(x) <- ""; return(round(x, rounding))}, rounding)
+                    }
+
+                    print(print_df)
+                    return(invisible())
+                }
+
                 ## Accuracy
                 cat("Overall accuracy:\n")
-                print.table(x = x, what = "accuracy", is_bootstrapped = is_bootstrapped)
-                cat("\n\n")
+                print.table.accuracy(x, is_bootstrapped)
+                cat("\n")
 
-                # ## Trace
-                # cat("Proportion of trace:\n")
-                # print.table(x, "prop.trace", is_bootstrapped)
-                # cat("\n\n")
+                ## Trace
+                cat("Proportion of trace:\n")
+                print.table.prop.trace(x, is_bootstrapped)
 
                 cat("Use summary.dispRity() or plot.dispRity() for displaying the full results.\n")
                 return()
             }
-
         }
 
         
         ## ~~~~~~~
         ## Simple dispRity objects
         ## ~~~~~~~
-
 
         if(length(x$call) == 0) {
             if(!is.null(x$matrix) && class(x$matrix) == "matrix") {
