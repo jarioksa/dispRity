@@ -122,8 +122,6 @@ test_that("accuracy.score works" ,{
     expect_equal(accuracy.score(prediction, un_trained, return.table = TRUE), table(prediction, un_trained))
 })
 
-
-
 test_that("apply.accuracy.score works" ,{
 
     lda_test <- lda_test_data$lda_test
@@ -140,6 +138,24 @@ test_that("apply.accuracy.score works" ,{
     expect_equal(lapply(test1, length), list("species" = 3, "morpho" = 3))
     expect_equal(unique(unlist(lapply(test1, lapply, class))), "table")
 })
+
+test_that("apply.prop.trace works" ,{
+
+    lda_test <- lda_test_data$lda_test
+    one_sp_lda <- lda_test$species[[1]][[1]]
+    one_morpho_lda <- lda_test$morpho[[1]][[1]]
+
+    ## Works by default
+    test <- apply.prop.trace(lda_test)
+    expect_equal(names(test), names(lda_test)[1:2])
+
+    expect_equal(dim(test$species), c(2,3))
+    expect_equal(dim(test$species), c(2,3))
+
+    expect_equal(unname(test$species[,1]), one_sp_lda$svd^2/sum(one_sp_lda$svd^2))
+    expect_equal(unname(test$morpho[,1]), one_morpho_lda$svd^2/sum(one_morpho_lda$svd^2))
+})
+
 
 
 ## Test

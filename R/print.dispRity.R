@@ -151,7 +151,7 @@ print.dispRity <- function(x, all = FALSE, ...) {
 
                 ## Check the bootstraps (formalise!)
                 #TODO: formalise!
-                is_bootstrapped <- ifelse(length(x$support$bootstraps) > 1, TRUE, FALSE)
+                is_bootstrapped <- ifelse(x$support$bootstraps > 1, TRUE, FALSE)
 
                 ## Function for printing the tables
                 print.table <- function(x, what, is_bootstrapped, rounding = 3) {
@@ -169,7 +169,7 @@ print.dispRity <- function(x, all = FALSE, ...) {
 
                 ## Accuracy
                 cat("Overall accuracy:\n")
-                print.table(x, "accuracy", is_bootstrapped)
+                print.table(x = x, what = "accuracy", is_bootstrapped = is_bootstrapped)
                 cat("\n\n")
 
                 # ## Trace
