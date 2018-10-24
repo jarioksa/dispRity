@@ -114,7 +114,7 @@ test_that("accuracy.score works" ,{
 
     lda_test <- lda_test_data$lda_test
     prediction <- lda_test[[1]][[1]]$predict$class
-    un_trained <- lda_test$factors[[1]][-lda_test[[1]][[1]]$training]
+    un_trained <- lda_test$support$factors[[1]][-lda_test[[1]][[1]]$training]
 
     ## Works by default
     expect_equal(round(accuracy.score(prediction, un_trained, return.table = FALSE), 7), 0.5666667)

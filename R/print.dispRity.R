@@ -161,7 +161,7 @@ print.dispRity <- function(x, all = FALSE, ...) {
                                 "sd" = lapply(lapply(x$support[[what]], sd), round, digits = rounding)))
                     } else {
                         print_df <- t(as.data.frame(lapply(x$support[[what]], round, digits = rounding)))
-                        colnames(print_df_accuracy) <- ""
+                        colnames(print_df) <- ""
                     }
                     print(print_df)
                     return(invisible())
