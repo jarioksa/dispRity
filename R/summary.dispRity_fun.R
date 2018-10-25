@@ -159,7 +159,97 @@ summary.model.sim <- function(data, quantiles, cent.tend, recall, digits, match_
 }
 
 
-summary.lda.test <- function(data, quantiles, cent.tend, recall, digits, match_call) {
+summary.lda.test <- function(data, quantiles, cent.tend, recall, match_call, digits, ...) {
+
+    # stop("DEBUG summary.dispRity_fun")
+    # data$species[[2]] <- data$species[[3]] <- NULL
+    # data$morpho[[2]] <- data$morpho[[3]] <- NULL
+    # data$support$bootstraps <- 1
+
+    ## Checking whether the data is bootstrapped
+    is_bootstrapped <- ifelse(data$support$bootstraps > 1, TRUE, FALSE)
+
+    ## Get the observed priors
+    prior_obs <- lapply(data$support$factors, table)
+    prior_rel <- unlist(lapply(prior_obs, function(counts) return(counts/sum(counts))))
+    prior_obs <- unlist(prior_obs)
+
+    ## Get the groups names
+    group_names <- names(prior_obs)
+
+    ## Get the training prior
+    priors <- extract.lda.test(data, what = "prior", where = "fit")
+
+    ## Get the counts
+    counts <- extract.lda.test(data, what = "counts", where = "fit")
+
+    ## Get the posteriors
+    posteriors <- extract.lda.test(data, what = "class", where = "predict")
+
+    # Get the posterior tables
+    posterior_tables <- get.posterior.tables(posteriors, convert.prior.table(data$support$factors, data$support$bootstraps), extract.lda.test(data, what = "training"))
+
+    ## Get posterior sums
+    posteriors_counts <- lapply(posterior_tables, lapply, function(table) apply(table, 1, sum))
+    posteriors_ratio <- lapply(posteriors_counts, lapply, function(value) return(value/sum(value)))
+    posteriors_ratio <- lapply(lapply(posteriors_ratio, lapply, round, digits = digits), function(factor) do.call(cbind, factor))
+
+    ## Check quantile class
+    quantile_fun <- ifelse(class(quantile) == "function", TRUE, FALSE) 
+
+    if(is_bootstrapped) {
+        ## Priors
+        priors_cent_tend <- summarise.extract.list(priors, fun = cent.tend, rounding = digits)
+        if(quantile_fun) {
+            priors_spread <- summarise.extract.list(priors, fun = quantile, rounding = digits)
+        } else {
+            priors_spread <- summarise.extract.list(priors, fun = quantile, rounding = digits, probs = CI.converter(quantiles))
+        }
+        
+        
+        ## Prior chunk
+        prior_chunk <- rbind(unlist(priors_cent_tend), matrix(unlist(priors_spread), ncol = length(group_names)))
+        ## Prior chunk names
+        prior_chunk_names <- paste0("prior.", as.expression(match_call$cent.tend))
+        col_names <- colnames(priors_spread[[1]])
+        if(is.null(col_names)){
+            prior_chunk_names <- c(prior_chunk_names, paste0("prior.", as.expression(match_call$quantiles)))
+        } else {
+            prior_chunk_names <- c(prior_chunk_names, paste0("prior.", col_names))
+        }
+
+        ## Posteriors
+        post_cent_tend <- summarise.extract.list(posteriors_ratio, fun = cent.tend, rounding = digits)
+        if(quantile_fun) {
+            post_spread <- summarise.extract.list(posteriors_ratio, fun = quantile, rounding = digits)
+        }{
+            post_spread <- summarise.extract.list(priors, fun = quantile, rounding = digits, probs = CI.converter(quantiles))
+        }
+
+        ## Posterior chunk
+        post_chunk <- rbind(unlist(post_cent_tend), matrix(unlist(post_spread), ncol = length(group_names)))
+        ## Posterior chunk names
+        post_chunk_names <- paste0("post.", as.expression(match_call$cent.tend))
+        col_names <- colnames(post_spread[[1]])
+        if(is.null(col_names)){
+            post_chunk_names <- c(post_chunk_names, paste0("post.", as.expression(match_call$quantiles)))
+        } else {
+            post_chunk_names <- c(post_chunk_names, paste0("post.", col_names))
+        }
+    } else {
+        ## Get the priors
+        prior_chunk <- unlist(priors)
+        prior_chunk_names <- "prior"
+        ## Get the posteriors
+        post_chunk <- unlist(posteriors_ratio)
+        post_chunk_names <- "posterior"
+    }
+
+    ## Make the output table
+    posterior_results <- matrix(c(prior_obs, prior_rel), nrow = 2, dimnames = list(c("obs.prior", "proportion"), group_names), byrow = TRUE)
+    posterior_results <- rbind(posterior_results, prior_chunk, post_chunk)
+    rownames(posterior_results)[-c(1,2)] <- c(prior_chunk_names, post_chunk_names)
+
 
     #$Prediction
     #          total mean.prior sd.prior mean.factor.1.post factor.2.post

@@ -137,16 +137,20 @@ test_that("summary.extract.list works", {
 
 
 
-test_that("accuracy.score works" ,{
+test_that("posterior.table and accuracy.score works" ,{
 
-    lda_test <- lda_test_data$lda_test
-    prediction <- lda_test[[1]][[1]]$predict$class
-    un_trained <- lda_test$support$factors[[1]][-lda_test[[1]][[1]]$training]
+    set.seed(42)
+    priors <- as.factor(sample(c(0,1), 20, replace = TRUE))
+    posteriors <- as.factor(sample(c(0,1), 10, replace = TRUE))
+    trainings <- sample(1:20, 10)
 
-    ## Works by default
-    expect_equal(round(accuracy.score(prediction, un_trained, return.table = FALSE), 7), 0.5666667)
-    expect_is(accuracy.score(prediction, un_trained, return.table = TRUE), "table")
-    expect_equal(accuracy.score(prediction, un_trained, return.table = TRUE), table(prediction, un_trained))
+    ## Posterior table
+    posterior_table <- posterior.table(posteriors, priors, trainings)
+    expect_is(posterior_table, "table")
+    expect_equal(as.vector(posterior_table), c(1,1,3,5))
+
+    ## Accuracy score
+    expect_equal(accuracy.score(posterior_table), 0.6)
 })
 
 test_that("apply.accuracy.score works" ,{
@@ -159,11 +163,6 @@ test_that("apply.accuracy.score works" ,{
     expect_equal(unique(unlist(lapply(test1, length))), 3)
     expect_equal(round(test1[[1]], 7), c("1" = 0.5666667, "2" = 0.6666667, "3" =0.7000000))
     expect_equal(round(test1[[2]], 7), c("1" = 0.6666667, "2" = 0.7666667, "3" =0.6666667))
-
-    test1 <- apply.accuracy.score(lda_test, return.table = TRUE)
-    expect_equal(names(test1), names(lda_test)[1:2])
-    expect_equal(lapply(test1, length), list("species" = 3, "morpho" = 3))
-    expect_equal(unique(unlist(lapply(test1, lapply, class))), "table")
 })
 
 test_that("apply.prop.trace works" ,{

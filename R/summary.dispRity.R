@@ -4,7 +4,7 @@
 #'
 #' @param object A \code{dispRity} object.
 #' @param ... Additional arguments to be passed to \code{\link{summary}}.
-#' @param quantiles The quantiles to display (default is \code{quantiles = c(50, 95)}; is ignored if the \code{dispRity} object is not bootstrapped).
+#' @param quantiles The quantiles to display (default is \code{quantiles = c(50, 95)}; is ignored if the \code{dispRity} object is not bootstrapped). If the \code{dispRity} object is also \code{lda.test}, quantiles can be a spread function.
 #' @param cent.tend A function for summarising the bootstrapped disparity values (default is \code{\link[stats]{median}}).
 #' @param recall \code{logical} value specifying whether to recall the \code{dispRity} parameters input (default = \code{FALSE}).
 #' @param digits Optional, a value for digits the values in the output table (default = 2).
@@ -31,23 +31,27 @@
 #'
 #' @author Thomas Guillerme
 
-## DEBUG
+# # DEBUG
 # source("sanitizing.R")
 # source("make.metric.R")
 # source("summary.dispRity_fun.R")
 # data(BeckLee_mat50)
 # groups <- as.data.frame(matrix(data = c(rep(1, 12), rep(2, 13), rep(3, 12), rep(4, 13)), dimnames = list(rownames(BeckLee_mat50))), ncol = 1)
-# customised_subsets <- custom.subsets(BeckLee_mat50, groups)
-# bootstrapped_data <- boot.matrix(customised_subsets, bootstraps = 3, rarefaction = TRUE)
-# subsets <- extract.dispRity(sum_of_variances, observed = FALSE, keep.structure = TRUE, concatenate = TRUE)
-# data <- sequential.test(subsets, family = gaussian, correction = "hommel")
+# #customised_subsets <- custom.subsets(BeckLee_mat50, groups)
+# #bootstrapped_data <- boot.matrix(customised_subsets, bootstraps = 3, rarefaction = TRUE)
+# #subsets <- extract.dispRity(sum_of_variances, observed = FALSE, keep.structure = TRUE, concatenate = TRUE)
+# #data <- sequential.test(subsets, family = gaussian, correction = "hommel")
 
-# data <- dispRity(bootstrapped_data, metric = variances)
+# #data <- dispRity(bootstrapped_data, metric = variances)
 
 # quantiles <- c(50, 95)
 # cent.tend <- median
 # recall <- FALSE
 # match_call <- list() ; match_call$cent.tend <- "median"
+# source("lda.test_fun.R")
+# load("../tests/testthat/lda_test_data.Rda")
+# data <- lda_test_data$lda_test
+
 
 summary.dispRity <- function(object, ..., quantiles = c(50, 95), cent.tend = median, recall = FALSE, digits){#, results = "coefficients") {
 
@@ -117,7 +121,7 @@ summary.dispRity <- function(object, ..., quantiles = c(50, 95), cent.tend = med
         ## lda.test summary
         if(class(data)[1] == "dispRity" && class(data)[2] == "lda.test") {
             ## Return summary table
-            return(summary.model.sim(data = data, quantiles = quantiles, cent.tend = cent.tend, match_call = match_call))
+            return(summary.lda.test(data = data, quantiles = quantiles, cent.tend = cent.tend, match_call = match_call, digits = digits))
         }
 
         ## No dual class summary available

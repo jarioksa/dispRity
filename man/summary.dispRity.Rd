@@ -12,7 +12,7 @@
 
 \item{...}{Additional arguments to be passed to \code{\link{summary}}.}
 
-\item{quantiles}{The quantiles to display (default is \code{quantiles = c(50, 95)}; is ignored if the \code{dispRity} object is not bootstrapped).}
+\item{quantiles}{The quantiles to display (default is \code{quantiles = c(50, 95)}; is ignored if the \code{dispRity} object is not bootstrapped). If the \code{dispRity} object is also \code{lda.test}, quantiles can be a spread function.}
 
 \item{cent.tend}{A function for summarising the bootstrapped disparity values (default is \code{\link[stats]{median}}).}
 

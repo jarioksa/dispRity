@@ -351,6 +351,12 @@ test_that("summary.dispRity with model.test data", {
 })
 
 
+test_that("summary.dispRity with lda.test data", {
+    load("lda_test_data.Rda")
+    lda_test <- lda_test_data$lda_test
+   
+
+})
 # test_that("Test seq.test object management", {
 #     data(BeckLee_mat50)
 #     groups <- as.data.frame(matrix(data = c(rep(1, 12), rep(2, 13), rep(3, 12), rep(4, 13)), dimnames = list(rownames(BeckLee_mat50))), ncol = 1)

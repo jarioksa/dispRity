@@ -121,46 +121,6 @@ run.multi.lda <- function(factor, data_matrix, prior, train, CV, fun.type, boots
     return(replicate(bootstraps, run.one.lda(factor, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, ...), simplify = FALSE))
 }
 
-## Accuracy score
-accuracy.score <- function(prediction, un_trained, factors, return.table) {
-
-    if(return.table) {
-        return(table(prediction, un_trained))
-    }
-
-    # ## Get the prediction accuracy
-    # get.accuracy <- function(data, attribution_table, scale = scale.accuracy) {
-    #     if(!scale) {
-    #         ## Return the average number of correct predictions
-    #         return(sum(diag(attribution_table))/sum(attribution_table))
-    #     } else {
-    #         ## Return the number of scaled correct predictions
-    #         obs_class_proportion <- table(data$data[, ncol(data$data)])
-    #         obs_class_proportion <- obs_class_proportion/sum(obs_class_proportion)
-
-    #         obs_class_proportion <- c(0.333, 0.333, 0.333)            
-
-    #         sum(diag(attribution_table)/obs_class_proportion)
-
-    #         /(sum(attribution_table))
-
-    #         sum(attribution_table*obs_class_proportion)
-
-    #         test <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
-
-    #         sum(diag(attribution_table))/sum(attribution_table)
-
-    #         predict_rand1 <- which(data$predict$class == "random1")
-    #         (data$predict$class[predict_rand1] == data$data[-data$training, ncol(data$data)][predict_rand1])
-    #     }
-    # }
-
-    prediction_accuracy <- mean(prediction == un_trained)
-
-    ## Return the score
-    return(prediction_accuracy)
-}
-
 ## Getting a specific variable from a lda.test list
 extract.lda.test <- function(lda_test, what, where, deviation, cent.tend) {
 
@@ -273,33 +233,52 @@ summarise.extract.list <- function(list_lda, fun, rounding = 10, ...) {
     }
 } 
 
+## Accuracy score
+accuracy.score <- function(posterior_table) {
+    #TODO: Allow scaling
+    return(sum(diag(posterior_table))/sum(posterior_table))
+}
+
+## Counting the posteriors
+posterior.table <- function(posterior, prior, training) {
+    return(table(posterior, prior[-training]))
+}
+
+## Convert the priors into a bootstrap table
+convert.prior.table <- function(priors, bootstraps) {
+    return(lapply(priors, function(prior) as.data.frame(replicate(bootstraps, prior))))
+}
+
+## Getting the list of posterior tables
+get.posterior.tables <- function(posteriors, priors, trainings) {
+    ## Get the tables for each bootstraps
+    mapply.posterior.table <- function(one_posteriors, one_priors, one_trainings) {
+        mapply(posterior.table, as.list(one_posteriors), as.list(one_priors), as.list(data.frame(one_trainings)), SIMPLIFY = FALSE)
+    }
+    return(mapply(mapply.posterior.table, posteriors, priors, trainings, SIMPLIFY = FALSE))
+}
 
 ## Applying the accuracy score to a whole lda-test object
-apply.accuracy.score <- function(lda_test, return.table = FALSE) {
-    ## Function for converting the training table in factors
-    convert.untrained <- function(element, classes, trainings, factors) {
-        table_train <- as.data.frame(replicate(ncol(trainings[[element]]), factors[[element]]))
-        table_train <- as.data.frame(sapply(1:ncol(table_train), function(col, table_train, trainings, element) return(table_train[-trainings[[element]][,col],col]), table_train, trainings, element))
-        return(table_train)
-    }
+apply.accuracy.score <- function(lda_test) {
 
-    ## Get the classes
-    classes <- extract.lda.test(lda_test, what = "class", where = "predict")
+    ## Get the posteriors
+    posteriors <- extract.lda.test(lda_test, what = "class", where = "predict")
+
     ## Get the trainings
     trainings <- extract.lda.test(lda_test, what = "training")
-    untrains <- sapply(1:length(classes), convert.untrained, classes, trainings, lda_test$support$factors, simplify = FALSE)
-    names(untrains) <- names(classes)
 
-    ## Apply the accuracy score on all all bootstraps and all factors
-    mapply.accuracy <- function(element, classes, untrains, factors, return.table) {
-        if(return.table) {
-            return(mapply(accuracy.score, classes[[element]], untrains[[element]], MoreArgs = list(factors = factors[[element]], return.table = return.table), SIMPLIFY = FALSE))
-        } else {
-            return(mapply(accuracy.score, classes[[element]], untrains[[element]], MoreArgs = list(factors = factors[[element]], return.table = return.table)))
-        }
-    }
-    output <- lapply(1:length(classes), mapply.accuracy, classes, untrains, lda_test$support$factors, return.table)
-    names(output) <- names(classes)
+    ## Get the prior in a table format
+    priors <- convert.prior.table(lda_test$support$factors, lda_test$support$bootstraps) 
+
+    ## Get the tables for each bootstraps
+    posterior_tables <- get.posterior.tables(posteriors, priors, trainings)
+
+    ## Get the accuracy scores
+    accuracy_scores <- lapply(posterior_tables, lapply, accuracy.score)
+
+    ## Get the scores in the right format
+    output <- lapply(accuracy_scores, unlist)
+
     return(output)
 }
 
