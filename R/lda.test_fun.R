@@ -231,6 +231,49 @@ extract.lda.test <- function(lda_test, what, where, deviation, cent.tend) {
 
 }
 
+## Applying a function to an extracted lda list
+summarise.extract.list <- function(list_lda, fun, rounding = 10, ...) {
+
+    ## Applying the function on one factor (i.e. element of the list)
+    apply.to.matrix <- function(one_factor, fun, rounding, ...){
+        output <- apply(one_factor, 1, function(one_factor, fun, rounding, ...) round(fun(one_factor, ...), digits = rounding), fun, rounding, ...)
+        # output <- apply(one_factor, 1, function(one_factor, fun, rounding) round(fun(one_factor), digits = rounding), fun, rounding) ; warning("DEBUG lda.test_fun")
+
+        ## Getting the output in the right format
+        if(class(output) == "numeric") {
+            ## If it's a numeric vector, make it into a matrix with levels as rownames
+            output <- matrix(output, dimnames = list(names(output)))
+        } else {
+            ## If it's a matrix, check if the rownames match the input
+            if(!all(rownames(output) %in% rownames(one_factor))) {
+                output <- t(output)
+            }
+        }
+        return(output)
+    }
+
+    apply.to.vector <- function(one_factor, fun, rounding, ...){
+        output <- round(fun(one_factor, ...), digits = rounding)
+        # output <- round(fun(one_factor), digits = rounding) ; warning("DEBUG lda.test_fun")
+
+        ## Get the output in the right format (a 1xn matrix)
+        return(matrix(output, nrow = 1, dimnames = list(NULL, names(output))))
+    }
+
+    ## Check the list elements class
+    input_class <- unique(unlist(lapply(list_lda, class)))
+
+    if(input_class == "matrix") {
+        ## Input is a matrix, output is going to be a list of matrix
+        return(lapply(list_lda, apply.to.matrix, fun = fun, rounding = rounding, ...))
+    } else {
+        ## Input is a vector, output is going to be a list of vector
+        return(lapply(list_lda, apply.to.vector, fun = fun, rounding = rounding, ...))
+
+    }
+} 
+
+
 ## Applying the accuracy score to a whole lda-test object
 apply.accuracy.score <- function(lda_test, return.table = FALSE) {
     ## Function for converting the training table in factors
@@ -259,7 +302,6 @@ apply.accuracy.score <- function(lda_test, return.table = FALSE) {
     names(output) <- names(classes)
     return(output)
 }
-
 
 ## Applying the proportion of trace to a whole lda-test object
 apply.prop.trace <- function(lda_test) {

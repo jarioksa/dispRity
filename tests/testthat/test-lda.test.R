@@ -110,6 +110,33 @@ test_that("extract.lda.test works" ,{
 })
 
 
+test_that("summary.extract.list works", {
+    ## List matrix
+    test_matrix <- lda_test_data$lda_test$support$prop.trace
+    ## List vector
+    test_vector <- lda_test_data$lda_test$support$accuracy
+
+    ## Testing the matrix outputs
+    test_matrix_level1 <- summarise.extract.list(test_matrix, fun = median)
+    expect_equal(lapply(test_matrix_level1, dim), list("species" = c(2,1), "morpho" = c(3,1)))
+    expect_equal(rownames(test_matrix_level1[[1]]), c("LD1", "LD2"))
+    expect_equal(rownames(test_matrix_level1[[2]]), c("LD1", "LD2", "LD3"))
+
+    test_matrix_level2 <- summarise.extract.list(test_matrix, fun = quantile, probs = c(0.05, 0.5, 0.75))
+    expect_equal(lapply(test_matrix_level2, dim), list("species" = c(2,3), "morpho" = c(3,3)))
+    expect_equal(rownames(test_matrix_level2[[1]]), c("LD1", "LD2"))
+    expect_equal(rownames(test_matrix_level2[[2]]), c("LD1", "LD2", "LD3"))
+
+    test_vector_level1 <- summarise.extract.list(test_vector, fun = median)
+    expect_equal(lapply(test_vector_level1, dim), list("species" = c(1,1), "morpho" = c(1,1)))
+
+    test_vector_level2 <- summarise.extract.list(test_vector, fun = quantile, probs = c(0.05, 0.5, 0.75))
+    expect_equal(lapply(test_vector_level2, dim), list("species" = c(1,3), "morpho" = c(1,3)))
+    expect_equal(colnames(test_matrix_level2[[2]]), c("5%", "50%", "75%"))
+})
+
+
+
 test_that("accuracy.score works" ,{
 
     lda_test <- lda_test_data$lda_test
