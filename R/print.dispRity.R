@@ -142,60 +142,41 @@ print.dispRity <- function(x, all = FALSE, ...) {
                 ## Tested lda
                 cat("Discriminant test:\n")
                 cat(paste0("Call: ", as.expression(x$support$call), " \n\n"))
-                ## Factors
-                # length_x <- length(x)
-                # cat(paste0("Tested ", ifelse(length_x > 3, "factors", "factor"), ":\n"))
-                # cat("    ", paste(names(x)[-c(length_x, length_x-1)], collapse = ", "), ".\n\n", sep = "")
 
-                ## Check the bootstraps (formalise!)
-                #TODO: formalise!
+                ## Check the bootstraps
                 is_bootstrapped <- ifelse(x$support$bootstraps > 1, TRUE, FALSE)
 
-                ## Function for printing the tables
-                print.table.accuracy <- function(x, is_bootstrapped, rounding = 3) {
-                    if(is_bootstrapped) {
-                        print_df <- data.frame(cbind(
-                            "median" = lapply(lapply(x$support$accuracy, median), round, digits = rounding),
-                                "sd" = lapply(lapply(x$support$accuracy, sd), round, digits = rounding)))
-                    } else {
-                        print_df <- t(as.data.frame(lapply(x$support$accuracy, round, digits = rounding)))
-                        colnames(print_df) <- ""
-                    }
-                    print(print_df)
-                    return(invisible())
-                }
-
-                print.table.prop.trace <- function(x, is_bootstrapped, rounding = 3) {
-                    apply.fun <- function(one_factor, fun, rounding){
-                        return(apply(one_factor, 1, function(one_factor, fun, rounding) round(fun(one_factor), digits = rounding), fun, rounding))
-                    }
-                    merge.and.name <- function(x,y, names = c("median", "sd")) {
-                        output <- rbind(x, y)
-                        rownames(output) <- names
-                        return(output)
-                    }
-
-                    if(is_bootstrapped) {
-                        ## Get the medians and sds and merge them
-                        medians <- lapply(x$support$prop.trace, apply.fun, median, rounding)
-                        sds <- lapply(x$support$prop.trace, apply.fun, sd, rounding)
-                        print_df <- lapply(mapply(merge.and.name, medians, sds, SIMPLIFY = FALSE), t)
-                    } else {
-                        print_df <- lapply(x$support$prop.trace, function(x, rounding) {colnames(x) <- ""; return(round(x, rounding))}, rounding)
-                    }
-
-                    print(print_df)
-                    return(invisible())
-                }
+                ## Rounding digits
+                round_digit <- 3
 
                 ## Accuracy
                 cat("Overall accuracy:\n")
-                print.table.accuracy(x, is_bootstrapped)
+                if(is_bootstrapped) {
+                    median <- summarise.extract.list(x$support$accuracy, fun = stats::median, rounding = round_digit)
+                    sd <- summarise.extract.list(x$support$accuracy, fun = stats::sd, rounding = round_digit)
+                    print_df <- cbind(median, sd)
+                } else {
+                    print_df <- cbind(lapply(x$support$accuracy, round, digits = round_digit))
+                    colnames(print_df) <- ""
+                }
+                print(print_df)
                 cat("\n")
 
                 ## Trace
                 cat("Proportion of trace:\n")
-                print.table.prop.trace(x, is_bootstrapped)
+                if(is_bootstrapped) {
+                    median <- summarise.extract.list(x$support$prop.trace, fun = stats::median, rounding = round_digit)
+                    sd <- summarise.extract.list(x$support$prop.trace, fun = stats::sd, rounding = round_digit)
+                    prop_trace <- mapply(cbind, median, sd, SIMPLIFY = FALSE)
+                    print_df <- lapply(prop_trace, function(x) {colnames(x) <- c("median", "sd") ; return(x)})
+                } else {
+                    clean.table <- function(table, round_digit) {
+                        colnames(table) <- ""
+                        return(round(table, digits = round_digit))
+                    }
+                    print_df <- lapply(test1$support$prop.trace, clean.table, round_digit)
+                }
+                print(print_df)
 
                 cat("Use summary.dispRity() or plot.dispRity() for displaying the full results.\n")
                 return()
