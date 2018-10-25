@@ -174,7 +174,7 @@ print.dispRity <- function(x, all = FALSE, ...) {
                         colnames(table) <- ""
                         return(round(table, digits = round_digit))
                     }
-                    print_df <- lapply(test1$support$prop.trace, clean.table, round_digit)
+                    print_df <- lapply(x$support$prop.trace, clean.table, round_digit)
                 }
                 print(print_df)
 
