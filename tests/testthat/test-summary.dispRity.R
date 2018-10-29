@@ -352,11 +352,53 @@ test_that("summary.dispRity with model.test data", {
 
 
 test_that("summary.dispRity with lda.test data", {
+    
+    set.seed(1)
+    ## Single factor no bootstrap
+    data_df <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]), species = rep(c("s","c","v"), rep(50,3)))
+    test <- lda.test(data_df, train = 50)
+
+    test_summary <- summary(test)
+    expect_equal(names(test_summary), c("prediction", "group_means"))
+    expect_equal(dim(test_summary$prediction), c(4, 3))
+    expect_equal(unname(test_summary$prediction[1,]), c(50, 50, 50))
+    expect_equal(unname(test_summary$prediction[2,]), c(1/3, 1/3, 1/3))
+    expect_equal(unname(test_summary$prediction[3,]), c(0.44, 0.34, 0.22))
+    expect_equal(unname(test_summary$prediction[4,]), c(0.28, 0.33, 0.39))
+    expect_equal(dim(test_summary$group_means), c(3, 4))
+
+
+    ## Multi factors + bootstraps
+
     load("lda_test_data.Rda")
-    lda_test <- lda_test_data$lda_test
-   
+    lda_test_bs <- lda_test_data$lda_test
+    test_summary <- summary(lda_test_bs)
+
+    expect_equal(names(test_summary), c("prediction", "group_means"))
+    expect_equal(dim(test_summary$prediction), c(14, 5))
+    expect_equal(unname(test_summary$prediction[1,]), c(20, 20, 10, 10, 20))
+    expect_equal(dim(test_summary$group_means), c(5, 24))
+
 
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # test_that("Test seq.test object management", {
 #     data(BeckLee_mat50)
 #     groups <- as.data.frame(matrix(data = c(rep(1, 12), rep(2, 13), rep(3, 12), rep(4, 13)), dimnames = list(rownames(BeckLee_mat50))), ncol = 1)

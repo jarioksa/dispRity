@@ -512,108 +512,96 @@ plot.dtt <- function(data, quantiles, cent.tend, ylim, xlab, ylab, col, density,
     options(warn = 0)
 }
 
+
+
+
 ## Plotting lda.test results
-plot.lda.test <- function(data, ..., plot = TRUE, legend = TRUE, leg.pos = "topright") {
+plot.lda.test <- function(data, elements, ylim, xlab, ylab, col, observed, ...) {
 
-    ## dots arguments
-    dots <- list(...)
+    ## Factors
+    factors <- names(data$support$factors)
+    n_factors <- length(factors)
 
-    ## Get the classes
-    classes <- levels(data$data[, ncol(data$data)])
+    ## Levels
+    levels <- lapply(data$support$factors, levels)
+    n_levels <- lapply(levels, length)
 
-    ## Handle the optional arguments
-    if(plot) {
-        if(is.null(dots$col)) {
-            dots$col <- grDevices::gray.colors(3)
-        }
-        if(is.null(dots$xlab)) {
-            dots$xlab <- "Classes"
-        }
-        if(is.null(dots$ylab)) {
-            dots$ylab <- "Proportional attributions"
-        }
-        if(is.null(dots$xlim)) {
-            dots$xlim <- c(1:length(classes))
-        }
-        if(is.null(dots$ylim)) {
-            dots$ylim <- c(0,1)
-        }
+    ## Is bootstrapped
+    is_bootstrapped <- ifelse(data$support$bootstraps > 1, TRUE, FALSE)
+
+    ## Get the default arguments
+    if(missing(col)) {
+        col <- grDevices::gray.colors(max(unlist(n_levels)))
     }
 
-    ## Get the attribution table
-    attribution_table <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
+    if(missing(ylim)) {
+        ylim <- c(0, 1)
+    }
 
-    # ## Get the prediction accuracy
-    # get.accuracy <- function(data, attribution_table, scale = scale.accuracy) {
-    #     if(!scale) {
-    #         ## Return the average number of correct predictions
-    #         return(sum(diag(attribution_table))/sum(attribution_table))
-    #     } else {
-    #         ## Return the number of scaled correct predictions
-    #         obs_class_proportion <- table(data$data[, ncol(data$data)])
-    #         obs_class_proportion <- obs_class_proportion/sum(obs_class_proportion)
+    if(missing(xlab)) {
+        xlab <- "Levels"
+    }
 
-    #         obs_class_proportion <- c(0.333, 0.333, 0.333)            
+    if(missing(ylab)) {
+        ylab <- "Proportional attributions"
+    }
 
-    #         sum(diag(attribution_table)/obs_class_proportion)
+    ## Get the attributions
+    posteriors <- extract.lda.test(data, what = "class", where = "predict")
 
-    #         /(sum(attribution_table))
+    # Get the posterior tables
+    posterior_tables <- get.posterior.tables(posteriors, convert.prior.table(data$support$factors, data$support$bootstraps), extract.lda.test(data, what = "training"))
 
-    #         sum(attribution_table*obs_class_proportion)
+    ## Convert the attribution tables into proportions
+    convert.into.prop <- function(table) {
+        t(table/apply(table, 2, sum))
+    }
 
-    #         test <- table(data$predict$class, data$data[-data$training, ncol(data$data)])
 
-    #         sum(diag(attribution_table))/sum(attribution_table)
+    ## Get posterior sums
+    lapply(posterior_tables)
 
-    #         predict_rand1 <- which(data$predict$class == "random1")
-    #         (data$predict$class[predict_rand1] == data$data[-data$training, ncol(data$data)][predict_rand1])
-    #     }
-    # }
+
+    posteriors_counts <- lapply(posterior_tables, lapply, function(table) apply(table, 1, sum))
+    posteriors_ratio <- lapply(posteriors_counts, lapply, function(value) return(value/sum(value)))
+    posteriors_ratio <- lapply(lapply(posteriors_ratio, lapply, round, digits = digits), function(factor) do.call(cbind, factor))
 
     prediction_accuracy <- mean(data$predict$class == data$data[-data$training, ncol(data$data)])
 
-    if(plot) {
-        ## Get list of posteriors
-        posteriors <- data.frame(data$predict)
+    ## Get list of posteriors
+    posteriors <- data.frame(data$predict)
 
-        ## Get the proportion of right classification per class
-        ## Get one list of proportions
-        get.proportions <- function(class_ID, posteriors, classes) {
-            proportion <- apply(posteriors[which(posteriors$class == classes[class_ID]),
-                                2:(length(classes)+1)], 2, mean)
-            names(proportion) <- paste0("post.", classes)
-            return(proportion)
-        }
+    ## Get the proportion of right classification per class
+    ## Get one list of proportions
+    get.proportions <- function(class_ID, posteriors, classes) {
+        proportion <- apply(posteriors[which(posteriors$class == classes[class_ID]),
+                            2:(length(classes)+1)], 2, mean)
+        names(proportion) <- paste0("post.", classes)
+        return(proportion)
+    }
 
-        ## Get the proportion for each posterior
-        proportions <- lapply(as.list(1:length(classes)), get.proportions, posteriors, classes)
-        names(proportions) <- classes
+    ## Get the proportion for each posterior
+    proportions <- lapply(as.list(1:length(classes)), get.proportions, posteriors, classes)
+    names(proportions) <- classes
 
-        ## Adding the accuracy to the main
-        main_accuracy <- paste0("Accuracy = ", round(prediction_accuracy*100, 2), "%")
-        
-        #TG: TODO Make the plot addling more flexible
-        if(!is.null(dots$main)) {
-            dots$main <- paste0(dots$main, " (", main_accuracy, ")")
-        } else {
-            dots$main <- main_accuracy
-        }
-
-        ## Plotting the proportions
-        plot_table <- as.matrix(data.frame(proportions))
-
-        barplot(plot_table, main = dots$main, col = dots$col, xlab = dots$xlab, ylab = dots$ylab,
-                ylim = dots$ylim, beside = FALSE)
-        
-        if(legend) {
-            legend(x = leg.pos, legend = classes, col = dots$col, pch = 15, bg = "white")
-        }
-
+    ## Adding the accuracy to the main
+    main_accuracy <- paste0("Accuracy = ", round(prediction_accuracy*100, 2), "%")
     
+    #TG: TODO Make the plot addling more flexible
+    if(!is.null(dots$main)) {
+        dots$main <- paste0(dots$main, " (", main_accuracy, ")")
     } else {
+        dots$main <- main_accuracy
+    }
 
-        ## Return the attribution table
-        return(list("attribution" = attribution_table, "accuracy" = prediction_accuracy))
+    ## Plotting the proportions
+    plot_table <- as.matrix(data.frame(proportions))
+
+    barplot(plot_table, main = dots$main, col = dots$col, xlab = dots$xlab, ylab = dots$ylab,
+            ylim = dots$ylim, beside = FALSE)
+    
+    if(legend) {
+        legend(x = leg.pos, legend = classes, col = dots$col, pch = 15, bg = "white")
     }
 }
 

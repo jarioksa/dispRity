@@ -30,10 +30,56 @@
 Running a discriminant analysis or canonical variable analysis test on a \code{dispRity} object
 }
 \examples{
+## The classic iris example:
+
+## A data.frame with the factor as the last column
+iris_data <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]),
+                        species = rep(c("s","c","v"), rep(50,3)))
+
+## The lda test with a training sample size of 50 specimen
+iris_test <- lda.test(iris_data, train = 50)
+
+## Printing the results
+iris_test
+
+## Summarising and plotting the results
+summary(iris_test)
+plot(iris_test)
+
+\dontrun{
+## A geomorph example
+require(geomorph)
+
+## Loading the plethodon dataset
+data(plethodon)
+
+## Running a Procrustes superimposition
+procrustes <- geomorph::gpagen(plethodon$land)
+
+## Creating two factors: the morpho groups and a random group
+morpho_group <- c(rep("group1", 10), rep("group2", 10), rep("group3", 20))
+random_group <- sample(c("random1", "random2", "random3"), 40, replace = TRUE) 
+
+## Combining them into a geomorph.data.frame object
+geomorph_df <- geomorph.data.frame(procrustes, random = random_group, morpho = morpho_group)
+
+## Converting it into a dispRity object without ordination
+disparity_data <- geomorph.ordination(geomorph_df, ordinate = FALSE)
+
+## Applying a simple lda test with a training sample size of 10 specimen bootstrapped 100 times
+plethodon_test <- lda.test(disparity_data, train = 10, bootstraps = 100)
+
+## Printing the results
+plethodon_test
+
+## Summarising and plotting the results
+summary(plethodon_test)
+plot(plethodon_test)
+}
 
 }
 \seealso{
-
+\code{\link{dispRity}}, \code{\link{test.dispRity}}, \code{\link{summary.dispRity}}, \code{\link{plot.dispRity}}.
 }
 \author{
 Thomas Guillerme

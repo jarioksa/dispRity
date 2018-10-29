@@ -161,10 +161,12 @@ summary.model.sim <- function(data, quantiles, cent.tend, recall, digits, match_
 
 summary.lda.test <- function(data, quantiles, cent.tend, recall, match_call, digits, ...) {
 
-    # stop("DEBUG summary.dispRity_fun")
-    # data$species[[2]] <- data$species[[3]] <- NULL
-    # data$morpho[[2]] <- data$morpho[[3]] <- NULL
-    # data$support$bootstraps <- 1
+    ## Prediction:
+
+    ## Default digits handling
+    if(digits == "default") {
+        digits = 3
+    }
 
     ## Checking whether the data is bootstrapped
     is_bootstrapped <- ifelse(data$support$bootstraps > 1, TRUE, FALSE)
@@ -187,6 +189,7 @@ summary.lda.test <- function(data, quantiles, cent.tend, recall, match_call, dig
     posteriors <- extract.lda.test(data, what = "class", where = "predict")
 
     # Get the posterior tables
+    # warning("The posteriors are based on the classes only, not on the posterior -> to change")
     posterior_tables <- get.posterior.tables(posteriors, convert.prior.table(data$support$factors, data$support$bootstraps), extract.lda.test(data, what = "training"))
 
     ## Get posterior sums
@@ -222,7 +225,7 @@ summary.lda.test <- function(data, quantiles, cent.tend, recall, match_call, dig
         post_cent_tend <- summarise.extract.list(posteriors_ratio, fun = cent.tend, rounding = digits)
         if(quantile_fun) {
             post_spread <- summarise.extract.list(posteriors_ratio, fun = quantile, rounding = digits)
-        }{
+        } else {
             post_spread <- summarise.extract.list(priors, fun = quantile, rounding = digits, probs = CI.converter(quantiles))
         }
 
@@ -236,6 +239,7 @@ summary.lda.test <- function(data, quantiles, cent.tend, recall, match_call, dig
         } else {
             post_chunk_names <- c(post_chunk_names, paste0("post.", col_names))
         }
+
     } else {
         ## Get the priors
         prior_chunk <- unlist(priors)
@@ -249,6 +253,45 @@ summary.lda.test <- function(data, quantiles, cent.tend, recall, match_call, dig
     posterior_results <- matrix(c(prior_obs, prior_rel), nrow = 2, dimnames = list(c("obs.prior", "proportion"), group_names), byrow = TRUE)
     posterior_results <- rbind(posterior_results, prior_chunk, post_chunk)
     rownames(posterior_results)[-c(1,2)] <- c(prior_chunk_names, post_chunk_names)
+
+
+    ## Group means:
+
+    ## Get the group means
+    group_means <- extract.lda.test(data, what = "means", where = "fit")
+
+    if(is_bootstrapped) {
+        ## Splitting the matrices
+        split.matrix<-function(one_group_mean, bootstraps) {
+            start <- seq(from = 1, to = ncol(one_group_mean), by = ncol(one_group_mean)/bootstraps)
+            end <- (start + ncol(one_group_mean)/bootstraps) - 1
+            return(lapply(as.list(data.frame(rbind(start, end))), function(margin, matrix) return(matrix[, c(margin[1]:margin[2])]), matrix = one_group_mean))
+        } 
+
+        ## list per bootstraps
+        group_means <- lapply(group_means, split.matrix, bootstraps = data$support$bootstraps)
+
+        ## Merging the matrices (and extracting the means)
+        merge.matrices <- function(one_group_mean, fun) {
+            return(apply(simplify2array(one_group_mean), 1:2, fun))
+        }
+
+        ## Apply the central tendency on all the groups
+        group_means <- lapply(group_means, merge.matrices, fun = cent.tend)
+        group_means_out <- do.call(rbind, group_means)
+        rownames(group_means_out) <- paste(rep(names(group_means), unlist(lapply(group_means, nrow))), rownames(group_means_out), sep = ".")
+    } else {
+        ## Get the output in the right format (non-bootstrapped)
+        group_means_out <- do.call(rbind, group_means)
+        rownames(group_means_out) <- paste(rep(names(group_means), unlist(lapply(group_means, nrow))), rownames(group_means_out), sep = ".")
+    }
+
+
+    ## coefficients:
+    coefficients <- NULL
+
+
+    return(list("prediction" = posterior_results, "group_means" = group_means_out))
 
 
     #$Prediction

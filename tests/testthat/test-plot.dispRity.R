@@ -229,21 +229,21 @@ test_that("plot subclasses works", {
     expect_error(plot(dispRity_dtt, cent.tend = var))
 
     ## lda.test
-    require(geomorph)
-    data(plethodon)
-    load("lda_test_data.Rda")
-    procrustes <- geomorph::gpagen(plethodon$land, print.progress = FALSE)
-    geomorph_df <- geomorph.data.frame(procrustes, species = as.factor(lda_test_data$species), morpho = as.factor(lda_test_data$morpho))
-    data_disparity <- geomorph.ordination(geomorph_df, ordinate = FALSE)
-
-    expect_warning(test <- lda.test(data_disparity, train = 10))
-
-    print_test <- capture.output(test)
+    set.seed(1)
+    ## Single factor no bootstrap
+    data_df <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]), species = rep(c("s","c","v"), rep(50,3)))
+    test <- lda.test(data_df, train = 50)
 
 
-    expect_equal(print_test[1],
-        c("Discriminant test:")
-        )
+
+    ## Multi factors + bootstraps
+    # load("lda_test_data.Rda")
+    # lda_test_bs <- lda_test_data$lda_test
+    # test_summary <- summary(lda_test_bs)
+
+    # expect_equal(names(test_summary), c("prediction", "group_means"))
+    # expect_equal(dim(test_summary$prediction), c(14, 5))
+    # expect_equal(unname(test_summary$prediction[1,]), c(20, 20, 10, 10, 20))
+    # expect_equal(dim(test_summary$group_means), c(5, 24))
 
 })
-

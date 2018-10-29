@@ -242,6 +242,27 @@ accuracy.score <- function(posterior_table) {
 ## Counting the posteriors
 posterior.table <- function(posterior, prior, training) {
     return(table(posterior, prior[-training]))
+
+    # priors
+    # [1] 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0
+    # posteriors
+    # [1] 1 1 1 1 1 0 0 0 0 0 0
+    # training
+    # [1] 1 2 3 4 5 6 7 8 9
+
+    #     1 2 3 4 5 6 7 8 9  11  13  15  17  19
+    # [1] 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0
+    #     t t t t t t t t t 1 1 1 1 1 0 0 0 0 0 0
+
+    # Correct 1: 1
+    # Correct 0: 6
+
+    # 1 that are 0: 0
+    # 0 that are 1: 4
+
+    #           0 1 <- priors
+    # post -> 0 6 0
+    #         1 4 1
 }
 
 ## Convert the priors into a bootstrap table
