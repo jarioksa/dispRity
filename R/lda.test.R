@@ -49,6 +49,7 @@
 #' 
 #' \dontrun{
 #' ## A geomorph example
+#' set.seed(1)
 #' require(geomorph)
 #'
 #' ## Loading the plethodon dataset
@@ -58,8 +59,8 @@
 #' procrustes <- geomorph::gpagen(plethodon$land)
 #' 
 #' ## Creating two factors: the morpho groups and a random group
-#' morpho_group <- c(rep("group1", 10), rep("group2", 10), rep("group3", 20))
-#' random_group <- sample(c("random1", "random2", "random3"), 40, replace = TRUE) 
+#' morpho_group <- as.factor(c(rep("group1", 10), rep("group2", 10), rep("group3", 20)))
+#' random_group <- as.factor(sample(c("random1", "random2", "random3"), 40, replace = TRUE))
 #' 
 #' ## Combining them into a geomorph.data.frame object
 #' geomorph_df <- geomorph.data.frame(procrustes, random = random_group, morpho = morpho_group)

@@ -516,7 +516,7 @@ plot.dtt <- function(data, quantiles, cent.tend, ylim, xlab, ylab, col, density,
 
 
 ## Plotting lda.test results
-plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, ...) {
+plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quantiles, ...) {
 
     ## Factors
     factors <- names(data$support$factors)
