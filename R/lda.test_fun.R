@@ -96,7 +96,14 @@ factorise.subsets <- function(data) {
 run.one.lda <- function(factor, data_matrix, prior, train, CV, fun.type, ...) {
 
     ## First we select a subset of the dataset for training
-    subset <- sample(1:nrow(data_matrix), train)
+    subset <- sample(1:nrow(data_matrix), train) 
+
+
+
+    #TODO: add replacement option??? (e.g. for phylo LDA)
+    
+
+
     training <- factor[subset]
 
     ## Set the prior (if missing)
