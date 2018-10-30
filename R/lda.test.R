@@ -17,7 +17,7 @@
 
 # TODO: add a parallel option (to be applied at the wrapper level of run.multi.lda)]]
 
-#' @returns
+#' @return
 #' A list of class \code{"dispRity"} and \code{"lda.test"} containing the results for each tested factor(s) and each bootstraps along with a \code{$support} element containing meta-data.
 #' 
 #' For example, for two tested factors with three bootstrap replicates each:

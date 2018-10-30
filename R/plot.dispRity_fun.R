@@ -516,7 +516,7 @@ plot.dtt <- function(data, quantiles, cent.tend, ylim, xlab, ylab, col, density,
 
 
 ## Plotting lda.test results
-plot.lda.test <- function(data, elements, ylim, xlab, ylab, col, observed, ...) {
+plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, ...) {
 
     ## Factors
     factors <- names(data$support$factors)
@@ -538,71 +538,92 @@ plot.lda.test <- function(data, elements, ylim, xlab, ylab, col, observed, ...) 
         ylim <- c(0, 1)
     }
 
-    if(missing(xlab)) {
-        xlab <- "Levels"
-    }
-
     if(missing(ylab)) {
         ylab <- "Proportional attributions"
     }
 
-    ## Get the attributions
-    posteriors <- extract.lda.test(data, what = "class", where = "predict")
+    xlab_default <- ifelse(missing(xlab), TRUE, FALSE)
 
     # Get the posterior tables
-    posterior_tables <- get.posterior.tables(posteriors, convert.prior.table(data$support$factors, data$support$bootstraps), extract.lda.test(data, what = "training"))
+    posterior_tables <- get.posterior.tables(
+                            posteriors = extract.lda.test(data, what = "class", where = "predict"),
+                            priors = convert.prior.table(data$support$factors, data$support$bootstraps),
+                            trainings = extract.lda.test(data, what = "training")
+                            )
 
-    ## Convert the attribution tables into proportions
-    convert.into.prop <- function(table) {
-        t(table/apply(table, 2, sum))
+    ## Convert the attribution tables into proportions (and converting into a matrix)
+    convert.into.matrix <- function(table) {
+        dim_table <- dim(table)
+        return(matrix(table, dim_table[1], dim_table[2]))
     }
 
-
-    ## Get posterior sums
-    lapply(posterior_tables)
-
-
-    posteriors_counts <- lapply(posterior_tables, lapply, function(table) apply(table, 1, sum))
-    posteriors_ratio <- lapply(posteriors_counts, lapply, function(value) return(value/sum(value)))
-    posteriors_ratio <- lapply(lapply(posteriors_ratio, lapply, round, digits = digits), function(factor) do.call(cbind, factor))
-
-    prediction_accuracy <- mean(data$predict$class == data$data[-data$training, ncol(data$data)])
-
-    ## Get list of posteriors
-    posteriors <- data.frame(data$predict)
-
-    ## Get the proportion of right classification per class
-    ## Get one list of proportions
-    get.proportions <- function(class_ID, posteriors, classes) {
-        proportion <- apply(posteriors[which(posteriors$class == classes[class_ID]),
-                            2:(length(classes)+1)], 2, mean)
-        names(proportion) <- paste0("post.", classes)
-        return(proportion)
+    ## Get proportions
+    get.proportions <- function(matrix) {
+        apply(matrix, 2, function(x) x/sum(x))
     }
 
-    ## Get the proportion for each posterior
-    proportions <- lapply(as.list(1:length(classes)), get.proportions, posteriors, classes)
-    names(proportions) <- classes
+    ## Applying the matrix list function
+    fun.matrix.list <- function(one_list, fun, ..., proportional = FALSE) {
+        if(!proportional) {
+            return(apply(simplify2array(one_list), c(1,2), fun, ...))
+        } else {
+            ## First get each matrix as a proportion
+            proportions <- lapply(one_list, get.proportions)
+            return(apply(simplify2array(proportions), c(1,2), fun, ...))
+        }
+    }
 
-    ## Adding the accuracy to the main
-    main_accuracy <- paste0("Accuracy = ", round(prediction_accuracy*100, 2), "%")
+    ## Convert the posteriors into matrices
+    posterior_matrices <- lapply(posterior_tables, lapply, convert.into.matrix)
     
-    #TG: TODO Make the plot addling more flexible
-    if(!is.null(dots$main)) {
-        dots$main <- paste0(dots$main, " (", main_accuracy, ")")
-    } else {
-        dots$main <- main_accuracy
-    }
+    ## Getting the central tendency
+    central_tendency <- lapply(posterior_matrices, fun.matrix.list, fun = cent.tend)
 
-    ## Plotting the proportions
-    plot_table <- as.matrix(data.frame(proportions))
-
-    barplot(plot_table, main = dots$main, col = dots$col, xlab = dots$xlab, ylab = dots$ylab,
-            ylim = dots$ylim, beside = FALSE)
+    ## Matrices to plot (converting into proportions)
+    matrix_plot_list <- lapply(central_tendency, function(matrix) apply(matrix, 2, function(x) x/sum(x)))
+    matrix_plot_list <- mapply(function(x, y) {colnames(x) <- y ; return(x)}, matrix_plot_list, levels, SIMPLIFY = FALSE)
     
-    if(legend) {
-        legend(x = leg.pos, legend = classes, col = dots$col, pch = 15, bg = "white")
+    if(is_bootstrapped) {
+        ## Get the quantiles list
+        quantiles_list <- lapply(posterior_matrices, fun.matrix.list, fun = quantile, probs = CI.converter(quantiles), proportional = TRUE)
     }
+
+    ## Open the multiple plots
+    op_tmp <- par(mfrow = c(ceiling(sqrt(n_factors)),round(sqrt(n_factors))))
+
+    ## Get the font size corrector
+    cex_corrector <- prod(c(ceiling(sqrt(n_factors)),round(sqrt(n_factors))))/2
+    if(cex_corrector < 1) {
+        cex_corrector <- 1
+    }
+
+    ## Plotting the results
+    for(factor in 1:n_factors) {
+
+        ## Get the xlabel
+        if(xlab_default) {
+            xlab <- names(matrix_plot_list)[factor]
+        }
+
+        ## Plot the results
+        barplot(matrix_plot_list[[factor]], col = col, xlab = xlab, ylab = ylab, ylim = ylim, ...)
+        # barplot(matrix_plot_list[[factor]], col = col, xlab = xlab, ylab = ylab, ylim = ylim) ; warning("DEBUG plot.lda.test")
+        legend(x = "topright", legend = levels[[factor]], col = col[1:length(levels[[factor]])], pch = 15, bg = "white", pt.cex = 2/cex_corrector, cex = 1/cex_corrector)
+
+        ## Add the observed values (if needed)
+        if(observed) {
+            warning("TODO: observed in lda.test")
+        }
+
+        ## Add the quantiles
+        if(is_bootstrapped) {
+            warning("TODO: quantiles in lda.test")
+        }
+    }
+
+    par(op_tmp)
+
+    return(invisible())
 }
 
 

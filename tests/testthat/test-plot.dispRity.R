@@ -234,12 +234,14 @@ test_that("plot subclasses works", {
     data_df <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]), species = rep(c("s","c","v"), rep(50,3)))
     test <- lda.test(data_df, train = 50)
 
+    expect_null(plot(test))
 
+    # ## Multi factors + bootstraps
+    load("lda_test_data.Rda")
+    lda_test_bs <- lda_test_data$lda_test
 
-    ## Multi factors + bootstraps
-    # load("lda_test_data.Rda")
-    # lda_test_bs <- lda_test_data$lda_test
-    # test_summary <- summary(lda_test_bs)
+    expect_null(plot(lda_test_bs))
+
 
     # expect_equal(names(test_summary), c("prediction", "group_means"))
     # expect_equal(dim(test_summary$prediction), c(14, 5))

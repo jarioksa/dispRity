@@ -26,6 +26,19 @@
 
 \item{...}{Optional arguments to be passed to the discriminant function.}
 }
+\value{
+A list of class \code{"dispRity"} and \code{"lda.test"} containing the results for each tested factor(s) and each bootstraps along with a \code{$support} element containing meta-data.
+
+For example, for two tested factors with three bootstrap replicates each:
+
+\code{lda_out$factor1$bootstraps1}
+\code{               $bootstraps2}
+\code{               $bootstraps3}
+\code{       $factor2$bootstraps1}
+\code{               $bootstraps2}
+\code{               $bootstraps3}
+\code{       $support}
+}
 \description{
 Running a discriminant analysis or canonical variable analysis test on a \code{dispRity} object
 }

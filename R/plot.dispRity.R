@@ -249,6 +249,9 @@ plot.dispRity <- function(x, ..., type, quantiles = c(50, 95), cent.tend = media
         }
         
         if(class(data)[[1]] == "dispRity" && class(data)[[2]] == "lda.test") {
+
+            plot.lda.test(data = data, col = col, ylab = ylab, ylim = ylim, observed = observed, ...)
+
             return(invisible())
         }
 
