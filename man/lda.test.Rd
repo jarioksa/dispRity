@@ -5,7 +5,7 @@
 \title{Run a discriminant analysis type}
 \usage{
 \method{lda}{test}(data, train, prior, type = "linear", bootstraps,
-  CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...)
+  CV = FALSE, LASSO = FALSE, PGLS = FALSE, all.levels = TRUE, ...)
 }
 \arguments{
 \item{data}{A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.}
@@ -23,6 +23,8 @@
 \item{LASSO}{Logical, whether to perform a LASSO analysis.}
 
 \item{PGLS}{Logical, whether to perform a PGLS analysis.}
+
+\item{all.levels}{Logical, whether to always include all levels in the training dataset (\code{TRUE} - default) or not (\code{FALSE}). Not including speeds up the calculation but can generate errors when apply the discriminant function.}
 
 \item{...}{Optional arguments to be passed to the discriminant function.}
 }

@@ -13,6 +13,7 @@
 #' @param CV Logical, whether to perform cross-validation or not (default is \code{FALSE}).
 #' @param LASSO Logical, whether to perform a LASSO analysis.
 #' @param PGLS Logical, whether to perform a PGLS analysis.
+#' @param all.levels Logical, whether to always include all levels in the training dataset (\code{TRUE} - default) or not (\code{FALSE}). Not including speeds up the calculation but can generate errors when apply the discriminant function.
 #' @param ... Optional arguments to be passed to the discriminant function.
 
 # TODO: add a parallel option (to be applied at the wrapper level of run.multi.lda)]]
@@ -105,7 +106,7 @@
 # PGLS = FALSE
 # bootstraps = 4
 
-lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE, LASSO = FALSE, PGLS = FALSE, ...) {
+lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE, LASSO = FALSE, PGLS = FALSE, all.levels = TRUE, ...) {
 
     match_call <- match.call()
 
@@ -212,10 +213,11 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
     check.class(CV, "logical")
     check.class(LASSO, "logical")
     check.class(PGLS, "logical")
+    check.class(all.levels, "logical")
 
     ## Run the ldas
-    lda_out <- lapply(factors, run.multi.lda, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, bootstraps = bootstraps, ...)
-    # lda_out <- lapply(factors, run.multi.lda, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, bootstraps = bootstraps)
+    lda_out <- lapply(factors, run.multi.lda, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, bootstraps = bootstraps, all.levels = all.levels, ...)
+    # lda_out <- lapply(factors, run.multi.lda, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, bootstraps = bootstraps, all.levels = all.levels)
     
     ## Add lda names
     names(lda_out) <- names(factors)

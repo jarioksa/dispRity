@@ -92,8 +92,9 @@ factorise.subsets <- function(data) {
     }
 }
 
+
 ## Run a single LDA
-run.one.lda <- function(factor, data_matrix, prior, train, CV, fun.type, ...) {
+run.one.lda <- function(factor, data_matrix, prior, train, fun.type, all.levels, ...) {
 
     ## First we select a subset of the dataset for training
     subset <- sample(1:nrow(data_matrix), train) 
@@ -106,6 +107,14 @@ run.one.lda <- function(factor, data_matrix, prior, train, CV, fun.type, ...) {
 
     training <- factor[subset]
 
+    ## Check if all the levels are required
+    if(all.levels) {
+        while(!all(levels(factor) %in% unique(as.character(training)))) {
+            subset <- sample(1:nrow(data_matrix), train)
+            training <- factor[subset]
+        }
+    }
+
     ## Set the prior (if missing)
     if(!prior[[1]][[1]]){
         ## If estimate prior
@@ -113,7 +122,7 @@ run.one.lda <- function(factor, data_matrix, prior, train, CV, fun.type, ...) {
     }
 
     ## Fitting the LDA
-    lda_fit <- fun.type(x = data_matrix, grouping = factor, prior = prior, subset = subset, CV = CV, ...)
+    lda_fit <- fun.type(x = data_matrix, grouping = factor, prior = prior, subset = subset, ...)
 
     ## Predicting the fit
     lda_predict <- predict(lda_fit, data_matrix[-subset, ])
@@ -123,9 +132,9 @@ run.one.lda <- function(factor, data_matrix, prior, train, CV, fun.type, ...) {
 }
 
 ## Wrap lda runs
-run.multi.lda <- function(factor, data_matrix, prior, train, CV, fun.type, bootstraps, ...) {
+run.multi.lda <- function(factor, data_matrix, prior, train, fun.type, bootstraps, all.levels = all.levels, ...) {
     ## Replicate the LDAs
-    return(replicate(bootstraps, run.one.lda(factor, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, ...), simplify = FALSE))
+    return(replicate(bootstraps, run.one.lda(factor, data_matrix, prior = prior, train = train, fun.type = fun.type, all.levels = all.levels, ...), simplify = FALSE))
 }
 
 ## Getting a specific variable from a lda.test list

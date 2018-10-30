@@ -47,7 +47,7 @@ test_that("run.one.lda works", {
     factor <- as.factor(data[, ncol(data)])
 
     set.seed(1)
-    test <- run.one.lda(factor, data_matrix, prior = FALSE, train = 50, CV = FALSE, fun.type = MASS::lda)
+    test <- run.one.lda(factor, data_matrix, prior = FALSE, train = 50, CV = FALSE, fun.type = MASS::lda, all.levels = TRUE)
     expect_is(test, "list")
     expect_equal(names(test), c("fit", "predict", "training"))
     expect_is(test$fit, "lda")
@@ -220,6 +220,7 @@ test_that("lda.test works", {
     expect_error(lda.test(data = data_df, train = 10, CV = "x"))
     expect_error(lda.test(data = data_df, train = 10, LASSO = "x"))
     expect_error(lda.test(data = data_df, train = 10, PGLS = "x"))
+    expect_error(lda.test(data = data_df, train = 10, all.levels = "x"))
 
     ## Running the two examples
     test <- lda.test(data_df, train = 50, bootstraps = 7)
@@ -233,4 +234,21 @@ test_that("lda.test works", {
     expect_equal(names(test), c("species", "morpho", "support"))
     expect_equal(length(test[[1]]), 5)
     expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))
+
+    ## Running the geomorph example
+    set.seed(1)
+    require(geomorph)
+    data(plethodon)
+    procrustes <- geomorph::gpagen(plethodon$land, print.progress = FALSE)
+    morpho_group <- as.factor(c(rep("group1", 10), rep("group2", 10), rep("group3", 20)))
+    random_group <- as.factor(sample(c("random1", "random2", "random3"), 40, replace = TRUE))
+    geomorph_df <- geomorph.data.frame(procrustes, random = random_group, morpho = morpho_group)
+    disparity_data <- geomorph.ordination(geomorph_df, ordinate = FALSE)
+
+    ## Applying a simple lda test with a training sample size of 10 specimen bootstrapped 100 times
+    expect_warning(plethodon_test <- lda.test(disparity_data, train = 10, bootstraps = 100))
+
+    ## Summarising and plotting the results
+    test_results <- summary(plethodon_test, quantiles = 50, digits = 2)
+    expect_null(plot(plethodon_test))
 })
