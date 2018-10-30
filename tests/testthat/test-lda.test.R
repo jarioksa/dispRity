@@ -232,6 +232,5 @@ test_that("lda.test works", {
     expect_is(test, c("dispRity", "lda-test"))
     expect_equal(names(test), c("species", "morpho", "support"))
     expect_equal(length(test[[1]]), 5)
-    expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))    
-
+    expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))
 })

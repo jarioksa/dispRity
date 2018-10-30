@@ -372,10 +372,11 @@ test_that("summary.dispRity with lda.test data", {
 
     load("lda_test_data.Rda")
     lda_test_bs <- lda_test_data$lda_test
-    test_summary <- summary(lda_test_bs)
+    test_summary <- summary(lda_test_bs, quantiles = c(10, 18))
 
     expect_equal(names(test_summary), c("prediction", "group_means"))
-    expect_equal(dim(test_summary$prediction), c(14, 5))
+    expect_equal(dim(test_summary$prediction), c(12, 5))
+    expect_equal(rownames(test_summary$prediction), c("obs.prior", "proportion", "prior.median", "prior.41%", "prior.45%", "prior.55%", "prior.59%", "post.median", "post.41%", "post.45%", "post.55%", "post.59%"))
     expect_equal(unname(test_summary$prediction[1,]), c(20, 20, 10, 10, 20))
     expect_equal(dim(test_summary$group_means), c(5, 24))
 

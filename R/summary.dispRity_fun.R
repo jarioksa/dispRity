@@ -198,7 +198,7 @@ summary.lda.test <- function(data, quantiles, cent.tend, recall, match_call, dig
     posteriors_ratio <- lapply(lapply(posteriors_ratio, lapply, round, digits = digits), function(factor) do.call(cbind, factor))
 
     ## Check quantile class
-    quantile_fun <- ifelse(class(quantile) == "function", TRUE, FALSE) 
+    quantile_fun <- ifelse(class(quantiles) == "function", TRUE, FALSE) 
 
     if(is_bootstrapped) {
         ## Priors
