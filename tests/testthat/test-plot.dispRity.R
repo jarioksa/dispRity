@@ -240,7 +240,7 @@ test_that("plot subclasses works", {
     load("lda_test_data.Rda")
     lda_test_bs <- lda_test_data$lda_test
 
-    expect_null(plot(lda_test_bs))
+    expect_warning(expect_null(plot(lda_test_bs)))
 
 
     # expect_equal(names(test_summary), c("prediction", "group_means"))

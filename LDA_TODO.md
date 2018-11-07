@@ -6,8 +6,6 @@
  * Add `observed` and `elements` to the plots `lda.test`
 
 ### Bug fixes
-
- * Fix bug in `summary` for bootstrapped datasets (`bootstrap > 50`) errors
  
 ## Methods
 

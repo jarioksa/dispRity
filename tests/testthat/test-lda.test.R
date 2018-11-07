@@ -250,5 +250,7 @@ test_that("lda.test works", {
 
     ## Summarising and plotting the results
     test_results <- summary(plethodon_test, quantiles = 50, digits = 2)
-    expect_null(plot(plethodon_test))
+    expect_equal(dim(test_results$prediction), c(8, 6))
+    expect_equal(dim(test_results$group_means), c(6, 24))
+    expect_warning(expect_null(plot(plethodon_test)))
 })
