@@ -528,6 +528,7 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
 
     ## Is bootstrapped
     is_bootstrapped <- ifelse(data$support$bootstraps > 1, TRUE, FALSE)
+    quantiles_n <- length(quantiles)
 
     ## Get the default arguments
     if(missing(col)) {
@@ -630,7 +631,49 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
 
         ## Add the quantiles
         if(is_bootstrapped) {
-            warning("TODO: quantiles in lda.test")
+            ## Plotting the different quantiles for each level
+            xs <- barplot_x
+            ys <- matrix_plot_list[[factor]]
+    
+            ## Converting the array into a list
+            quantile_list_factor <- lapply(seq(dim(quantiles_list[[factor]])[3]), function(x) quantiles_list[[factor]][ , , x])
+
+            ## Get the number of lines to cross
+            lines_cross <- apply(matrix_plot_list[[factor]], 2, function(x) which(x != 0))
+            
+            #TODO: make that work for any number of lines
+            if(class(lines_cross) == "matrix") {
+                lines_cross <- apply(lines_cross, 2, list)
+            }
+            n_lines <- unlist(lapply(lines_cross, function(x) length(x)-1))
+
+            ## Getting the shifts for each level (to be based on n_lines)
+            #shifts <- (1:n_levels[[factor]]-mean(1:n_levels[[factor]]))*0.1
+
+            ## Looping through the levels (the bars in the barplot)
+            for(level in 1:n_levels[[factor]]){
+
+                ## Check if there are any lines to plot on
+                if(n_lines[level] != 0) {
+
+                    ## Add the confidence interval for each horizontal line
+                    # y_vals <- 0
+                    for(one_line in 1:n_lines[level]) {
+                        ## Checking positions
+                        x_vals <- rep(xs[level], 2)# + shift
+                        y_col <- ys[,level]
+                        ## Select the n's y_vals
+                        # y_vals <- y_vals + y_col[lines_cross[[level]]][one_line]
+                        ## Select the correct quantiles
+                        quantile_values <- quantile_list_factor[[level]][, lines_cross[[level]][one_line]]
+                        for(cis in 1:quantiles_n) {
+                            ## Get the y_values
+                            y_vals <- c(quantile_values[c(cis, quantiles_n * 2 - (cis - 1))])
+                            lines(x = x_vals, y = y_vals, lty = (quantiles_n - cis + 1), lwd = cis * 1.5)
+                        }
+                    }
+                }
+            }
         }
     }
 
