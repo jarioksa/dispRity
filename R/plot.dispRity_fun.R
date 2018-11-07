@@ -606,13 +606,26 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
         }
 
         ## Plot the results
-        barplot(matrix_plot_list[[factor]], col = col, xlab = xlab, ylab = ylab, ylim = ylim, ...)
-        # barplot(matrix_plot_list[[factor]], col = col, xlab = xlab, ylab = ylab, ylim = ylim) ; warning("DEBUG plot.lda.test")
-        legend(x = "topright", legend = levels[[factor]], col = col[1:length(levels[[factor]])], pch = 15, bg = "white", pt.cex = 2/cex_corrector, cex = 1/cex_corrector)
+        barplot_x <- barplot(matrix_plot_list[[factor]], col = col, xlab = xlab, ylab = ylab, ylim = ylim, ...)
+        # barplot_x <- barplot(matrix_plot_list[[factor]], col = col, xlab = xlab, ylab = ylab, ylim = ylim) ; warning("DEBUG plot.lda.test")
+        if(!observed) {
+            legend(x = "topright", legend = levels[[factor]], col = col[1:length(levels[[factor]])], pch = 15, bg = "white", pt.cex = 2/cex_corrector, cex = 1/cex_corrector)
+        } else {
+            legend(x = "topright", legend = c(levels[[factor]], "observed"), col = c(col[1:length(levels[[factor]])], "black"), pch = c(rep(15, n_levels[[factor]]), NA), bg = "white", pt.cex = 2/cex_corrector, cex = 1/cex_corrector, lty = c(rep(0, n_levels[[factor]]), 3), lwd = c(rep(0, n_levels[[factor]]), 3))
+        }
 
         ## Add the observed values (if needed)
         if(observed) {
-            warning("TODO: observed in lda.test")
+            ## Getting the shift variable
+            shift <- 1/n_levels[[factor]]
+            ## Getting the xs and ys values
+            xs <- barplot_x-shift
+            ys <- as.vector(table(data$support$factors[[factor]])/length(data$support$factors[[factor]]))
+
+            ## Plotting each line individually
+            for(line in 1:n_levels[[factor]]) {
+                lines(x = rep(xs[line], 2), y = c(0, ys[line]), lwd = 3, lty = 3)
+            }
         }
 
         ## Add the quantiles
