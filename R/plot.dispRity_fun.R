@@ -609,11 +609,6 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
         ## Plot the results
         barplot_x <- barplot(matrix_plot_list[[factor]], col = col, xlab = xlab, ylab = ylab, ylim = ylim, ...)
         # barplot_x <- barplot(matrix_plot_list[[factor]], col = col, xlab = xlab, ylab = ylab, ylim = ylim) ; warning("DEBUG plot.lda.test")
-        if(!observed) {
-            legend(x = "topright", legend = levels[[factor]], col = col[1:length(levels[[factor]])], pch = 15, bg = "white", pt.cex = 2/cex_corrector, cex = 1/cex_corrector)
-        } else {
-            legend(x = "topright", legend = c(levels[[factor]], "observed"), col = c(col[1:length(levels[[factor]])], "black"), pch = c(rep(15, n_levels[[factor]]), NA), bg = "white", pt.cex = 2/cex_corrector, cex = 1/cex_corrector, lty = c(rep(0, n_levels[[factor]]), 3), lwd = c(rep(0, n_levels[[factor]]), 3))
-        }
 
         ## Add the observed values (if needed)
         if(observed) {
@@ -641,14 +636,11 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
             ## Get the number of lines to cross
             lines_cross <- apply(matrix_plot_list[[factor]], 2, function(x) which(x != 0))
             
-            #TODO: make that work for any number of lines
+            ## Convert into a list if output was a matrix
             if(class(lines_cross) == "matrix") {
-                lines_cross <- apply(lines_cross, 2, list)
+                lines_cross <- unlist(apply(lines_cross, 2, list), recursive = FALSE)
             }
             n_lines <- unlist(lapply(lines_cross, function(x) length(x)-1))
-
-            ## Getting the shifts for each level (to be based on n_lines)
-            #shifts <- (1:n_levels[[factor]]-mean(1:n_levels[[factor]]))*0.1
 
             ## Looping through the levels (the bars in the barplot)
             for(level in 1:n_levels[[factor]]){
@@ -656,16 +648,17 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
                 ## Check if there are any lines to plot on
                 if(n_lines[level] != 0) {
 
+                    ## Select the shifting value around the center of the column
+                    shifts <- (1:n_lines[level]-mean(1:n_lines[level]))*0.1
+
                     ## Add the confidence interval for each horizontal line
-                    # y_vals <- 0
                     for(one_line in 1:n_lines[level]) {
                         ## Checking positions
-                        x_vals <- rep(xs[level], 2)# + shift
-                        y_col <- ys[,level]
-                        ## Select the n's y_vals
-                        # y_vals <- y_vals + y_col[lines_cross[[level]]][one_line]
+                        x_vals <- rep(xs[level], 2) + shifts[one_line]
                         ## Select the correct quantiles
                         quantile_values <- quantile_list_factor[[level]][, lines_cross[[level]][one_line]]
+                        ## Adjust the quantile to the next bar level
+                        quantile_values <- quantile_values + ifelse(one_line == 1, 0, ys[(one_line ), level]) #one_line - 1
                         for(cis in 1:quantiles_n) {
                             ## Get the y_values
                             y_vals <- c(quantile_values[c(cis, quantiles_n * 2 - (cis - 1))])
@@ -674,6 +667,11 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
                     }
                 }
             }
+        }
+        if(!observed) {
+            legend(x = "topright", legend = levels[[factor]], col = col[1:length(levels[[factor]])], pch = 15, bg = "white", pt.cex = 2/cex_corrector, cex = 1/cex_corrector)
+        } else {
+            legend(x = "topright", legend = c(levels[[factor]], "observed"), col = c(col[1:length(levels[[factor]])], "black"), pch = c(rep(15, n_levels[[factor]]), NA), bg = "white", pt.cex = 2/cex_corrector, cex = 1/cex_corrector, lty = c(rep(0, n_levels[[factor]]), 3), lwd = c(rep(0, n_levels[[factor]]), 3))
         }
     }
 

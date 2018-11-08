@@ -234,18 +234,23 @@ test_that("plot subclasses works", {
     data_df <- data.frame(rbind(iris3[,,1], iris3[,,2], iris3[,,3]), species = rep(c("s","c","v"), rep(50,3)))
     test <- lda.test(data_df, train = 50)
 
+    ## Simple plot
     expect_null(plot(test))
 
     # ## Multi factors + bootstraps
-    load("lda_test_data.Rda")
-    lda_test_bs <- lda_test_data$lda_test
+    ## Running the geomorph example
+    set.seed(1)
+    require(geomorph)
+    data(plethodon)
+    procrustes <- geomorph::gpagen(plethodon$land, print.progress = FALSE)
+    morpho_group <- as.factor(c(rep("group1", 10), rep("group2", 10), rep("group3", 20)))
+    random_group <- as.factor(sample(c("random1", "random2", "random3"), 40, replace = TRUE))
+    geomorph_df <- geomorph.data.frame(procrustes, random = random_group, morpho = morpho_group)
+    disparity_data <- geomorph.ordination(geomorph_df, ordinate = FALSE)
 
-    expect_warning(expect_null(plot(lda_test_bs)))
+    ## Applying a simple lda test with a training sample size of 10 specimen bootstrapped 100 times
+    expect_warning(plethodon_test <- lda.test(disparity_data, train = 10, bootstraps = 100))
 
-
-    # expect_equal(names(test_summary), c("prediction", "group_means"))
-    # expect_equal(dim(test_summary$prediction), c(14, 5))
-    # expect_equal(unname(test_summary$prediction[1,]), c(20, 20, 10, 10, 20))
-    # expect_equal(dim(test_summary$group_means), c(5, 24))
-
+    ## Plot with multiple panels, convidence intervals and observed values
+    expect_null(plot(plethodon_test, observed = TRUE))
 })
