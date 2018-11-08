@@ -2,14 +2,13 @@
 
 ## Architecture
 
- * Add quantiles to the plots `lda.test`
- * Add `observed` and `elements` to the plots `lda.test`
+ * Manage warning messages produced by `fun.type` in `lda.test`
 
 ### Bug fixes
  
 ## Methods
 
- * SB: LASSO + PGLS methods that can work indenpently or together.
+ * SB: LASSO + PGLS methods that can work independently or together.
  * TG: Finish the bootstrap implementation
  * TG: Cross validation
  
