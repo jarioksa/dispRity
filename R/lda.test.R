@@ -14,11 +14,17 @@
 #' @param LASSO Logical, whether to perform a LASSO analysis.
 #' @param PGLS Logical, whether to perform a PGLS analysis.
 #' @param all.levels Logical, whether to always include all levels in the training dataset (\code{TRUE} - default) or not (\code{FALSE}). Not including speeds up the calculation but can generate errors when apply the discriminant function.
-#' @param p.value Optional, whether to calculate the p-value for the groupings' accuracy. Can be either
+#' @param p.value Optional, whether to calculate the p-value for the groupings' accuracy. Can be \code{"two-sided"} (default), \code{"greater"} or \code{"lesser"}.
 #' @param ... Optional arguments to be passed to the discriminant function.
 
 # TODO: add a parallel option (to be applied at the wrapper level of run.multi.lda)]]
 
+#' @details
+#' \code{p.value} is indicating the probability of the observed accuracy of the factor(s) to be different than random (the null hypothesis).
+#' Typically, when a two equally probable level factor is used, an accuracy of 50% is expected under the null hypothesis.
+#' When no bootstraps are used, the p-value is calculated using a bootstrap test on 100 bootstraps of the null hypothesis.
+#' When bootstraps are used, the p-value is calculated by applying a t-test on the distribution of the accuracy from the observed data and a the distribution of the null hypothesis for the same amount of bootstraps.
+#' 
 #' @return
 #' A list of class \code{"dispRity"} and \code{"lda.test"} containing the results for each tested factor(s) and each bootstraps along with a \code{$support} element containing meta-data.
 #' 
@@ -105,9 +111,9 @@
 # CV = FALSE
 # LASSO = FALSE
 # PGLS = FALSE
-# bootstraps = 4
+# bootstraps = 100
 
-lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE, LASSO = FALSE, PGLS = FALSE, all.levels = TRUE, ...) {
+lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE, LASSO = FALSE, PGLS = FALSE, all.levels = TRUE, p.value, ...) {
 
     match_call <- match.call()
 
@@ -210,6 +216,63 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
         bootstraps <- 1
     }
 
+    if(!missing(p.value)) {
+        ## Check p-value class
+        p_class <- check.class(p.value, c("logical", "character"), msg = " must be either FALSE, TRUE (\"two.sided\") or any of the following: \"two.sided\", \"greater\", \"lesser\".")
+
+        if(p_class == "logical") {
+            if(p.value) {
+                test_p_value <- TRUE
+                alternative <- "two.sided"
+            } else {
+                test_p_value <- FALSE
+            }
+        } else {
+            test_p_value <- TRUE
+            check.method(p.value, c("two.sided", "greater", "lesser"), msg = "alternative")
+            alternative <- p.value    
+        }
+
+        if(test_p_value) {
+            if(bootstraps == 1) {
+                ## Calculate the p-value using a bootstrap test
+                p_bootstraps <- 100
+
+                ## Set p-value function
+                if(alternative == "two.sided") {
+                    get.p.value <- function(random, observed, replicates) {
+                        ## Centering the randoms and observed
+                        center_random <- abs(random - mean(random))
+                        center_observed <- abs(mean(observed) - mean(random))
+                        ## Getting the p
+                        return((sum(center_random >= center_observed) + 1)/(replicates + 1))
+                    }
+                }
+                if(alternative == "greater") {
+                    get.p.value <- function(random, observed, replicates) {
+                        # Getting the p
+                        return((sum(random >= mean(observed)) + 1)/(replicates + 1))
+                    }
+                }
+                if(alternative == "lesser") {
+                    get.p.value <- function(random, observed, replicates) {
+                        # Getting the p
+                        return((sum(random <= mean(observed)) + 1)/(replicates + 1))
+                    }
+                }
+            } else {
+                p_bootstraps <- bootstraps
+                ## Getting the p (note that replicates is the substitute argument for alternative for simplification)
+                get.p.value <- function(random, observed, replicates) {
+                    t.test(random, observed, alternative = replicates)$p.value
+                }
+            }
+        }
+    } else {
+        test_p_value <- FALSE
+    }
+
+
     ## CV, LASSO and PGLS
     check.class(CV, "logical")
     check.class(LASSO, "logical")
@@ -222,7 +285,6 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
     
     ## Add lda names
     names(lda_out) <- names(factors)
-    
 
     #TODO: Handle lda warnings! Capture them only once and print them only once.
 
@@ -253,6 +315,33 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
     lda_out$support$accuracy <- apply.accuracy.score(lda_out)
     ## Get the overall fit
     lda_out$support$prop.trace <- apply.prop.trace(lda_out)
+
+
+    ## Get the p-value
+    if(test_p_value) {
+        ## Run the random LDAs
+        p_test <- lapply(factors, run.random.lda, data_matrix, prior = prior, train = train, fun.type = fun.type, bootstraps = p_bootstraps, all.levels = all.levels, ...)
+        # p_test <- lapply(factors, run.random.lda, data_matrix, prior = prior, train = train, CV = CV, fun.type = fun.type, bootstraps = p_bootstraps, all.levels = all.levels)
+
+        names(p_test) <- names(factors)
+        ## Give the data a lda.test structure
+        p_test$support <- list()
+        ## Get the bootstraps
+        p_test$support$bootstraps <- bootstraps
+        ## Get the factors
+        p_test$support$factors <- factors
+
+        ## Calculating the accuracy for the p_tests
+        accuracies <- apply.accuracy.score(p_test)
+
+        ## Get the p_value
+        if(bootstraps > 1) {
+            ## Passing the alternative to the replicate argument
+            p_bootstraps <- alternative
+        }
+        ## Calculate the p-values using a random test
+        lda_out$support$p_value <- mapply(get.p.value, lda_out$support$accuracy, accuracies, MoreArgs = list("replicates" = p_bootstraps), SIMPLIFY = FALSE)
+    }
 
     ## Output the results
     class(lda_out) <- c("dispRity", "lda.test")

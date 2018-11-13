@@ -132,9 +132,14 @@ run.one.lda <- function(factor, data_matrix, prior, train, fun.type, all.levels,
 }
 
 ## Wrap lda runs
-run.multi.lda <- function(factor, data_matrix, prior, train, fun.type, bootstraps, all.levels = all.levels, ...) {
+run.multi.lda <- function(factor, data_matrix, prior, train, fun.type, bootstraps, all.levels, ...) {
     ## Replicate the LDAs
     return(replicate(bootstraps, run.one.lda(factor, data_matrix, prior = prior, train = train, fun.type = fun.type, all.levels = all.levels, ...), simplify = FALSE))
+}
+
+run.random.lda <- function(factor, data_matrix, prior, train, fun.type, bootstraps, all.levels, ...) {
+    ## Replicate the LDAs with randomised factors
+    return(replicate(bootstraps, run.one.lda(sample(factor, length(factor)), data_matrix, prior = prior, train = train, fun.type = fun.type, all.levels = all.levels, ...), simplify = FALSE))
 }
 
 ## Getting a specific variable from a lda.test list
