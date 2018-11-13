@@ -14,6 +14,7 @@
 #' @param LASSO Logical, whether to perform a LASSO analysis.
 #' @param PGLS Logical, whether to perform a PGLS analysis.
 #' @param all.levels Logical, whether to always include all levels in the training dataset (\code{TRUE} - default) or not (\code{FALSE}). Not including speeds up the calculation but can generate errors when apply the discriminant function.
+#' @param p.value Optional, whether to calculate the p-value for the groupings' accuracy. Can be either
 #' @param ... Optional arguments to be passed to the discriminant function.
 
 # TODO: add a parallel option (to be applied at the wrapper level of run.multi.lda)]]
