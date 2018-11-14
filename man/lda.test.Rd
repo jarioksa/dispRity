@@ -27,7 +27,7 @@
 
 \item{all.levels}{Logical, whether to always include all levels in the training dataset (\code{TRUE} - default) or not (\code{FALSE}). Not including speeds up the calculation but can generate errors when apply the discriminant function.}
 
-\item{p.value}{Optional, whether to calculate the p-value for the groupings' accuracy. Can be \code{"two-sided"} (default), \code{"greater"} or \code{"lesser"}.}
+\item{p.value}{Optional, whether to calculate the p-value for the groupings' accuracy. Can be \code{"two-sided"} (default), \code{"greater"} or \code{"less"}.}
 
 \item{...}{Optional arguments to be passed to the discriminant function.}
 }

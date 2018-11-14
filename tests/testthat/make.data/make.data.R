@@ -153,7 +153,7 @@ morpho_class <- c(rep("group1", 10), rep("group2", 10), rep("group3", 20))
 random_class <- sample(c("random1", "random2", "random3"), 40, replace = TRUE) 
 
 ## test lda objects
-geomorph_df <- geomorph.data.frame(procrustes, species = as.factor(lda_test_data$species), morpho = as.factor(lda_test_data$morpho))
+geomorph_df <- geomorph.data.frame(procrustes, species = as.factor(species_class), morpho = as.factor(morpho_class))
 data <- geomorph.ordination(geomorph_df, ordinate = FALSE)
 lda_test <- lda.test(data, train = 10, bootstraps = 3)
 

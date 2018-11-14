@@ -114,7 +114,7 @@ test_that("summary.extract.list works", {
     ## List matrix
     test_matrix <- lda_test_data$lda_test$support$prop.trace
     ## List vector
-    test_vector <- lda_test_data$lda_test$support$accuracy
+    test_vector <- lda_test_data$lda_test$support$accuracy$score
 
     ## Testing the matrix outputs
     test_matrix_level1 <- summarise.extract.list(test_matrix, fun = median)
@@ -221,6 +221,7 @@ test_that("lda.test works", {
     expect_error(lda.test(data = data_df, train = 10, LASSO = "x"))
     expect_error(lda.test(data = data_df, train = 10, PGLS = "x"))
     expect_error(lda.test(data = data_df, train = 10, all.levels = "x"))
+    expect_error(lda.test(data = data_df, train = 10, p.value = "x"))
 
     ## Running the two examples
     test <- lda.test(data_df, train = 50, bootstraps = 7)
@@ -234,6 +235,21 @@ test_that("lda.test works", {
     expect_equal(names(test), c("species", "morpho", "support"))
     expect_equal(length(test[[1]]), 5)
     expect_equal(names(test[[1]][[1]]), c("fit", "predict", "training"))
+
+    ## Example with bootstrap test
+    set.seed(1)
+    test <- lda.test(data_df, train = 50, p.value = TRUE)
+    expect_equal(test$support$accuracy$score, list("species" = c("1" = 1)))
+    expect_equal(test$support$accuracy$p_value, list("species" = 0.00990099))
+    expect_equal(test$support$accuracy$test, "bootstrap.test")
+
+    ## Example with t.test
+    set.seed(1)
+    test <- lda.test(data_df, train = 50, bootstraps = 100, p.value = "greater")
+    expect_equal(lapply(test$support$accuracy$score, mean), list("species" = 0.969))
+    expect_equal(test$support$accuracy$p_value, list("species" = 2.30126e-66))
+    expect_equal(test$support$accuracy$test, "t.test")
+
 
     ## Running the geomorph example
     set.seed(1)

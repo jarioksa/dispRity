@@ -658,7 +658,7 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
                         ## Select the correct quantiles
                         quantile_values <- quantile_list_factor[[level]][, lines_cross[[level]][one_line]]
                         ## Adjust the quantile to the next bar level
-                        quantile_values <- quantile_values + ifelse(one_line == 1, 0, ys[(one_line - 1), level]) #one_line - 1
+                        quantile_values <- quantile_values + ifelse(one_line == 1, 0, ys[(one_line - 1), level])
                         for(cis in 1:quantiles_n) {
                             ## Get the y_values
                             y_vals <- c(quantile_values[c(cis, quantiles_n * 2 - (cis - 1))])
@@ -874,3 +874,72 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
 
 #     }
 
+# stop("DeBUG plot.dispRity")
+
+
+# View(mtcars)
+# myData <- aggregate(mtcars$mpg,
+#     by = list(cyl = mtcars$cyl, gears = mtcars$gear),
+#     FUN = function(x) c(mean = mean(x), sd = sd(x),
+#                         n = length(x)))
+
+# myData <- do.call(data.frame, myData)
+
+# myData$se <- myData$x.sd / sqrt(myData$x.n)
+
+# colnames(myData) <- c("cyl", "gears", "mean", "sd", "n", "se")
+
+# myData$names <- c(paste(myData$cyl, "cyl /",
+#                         myData$gears, " gear"))
+
+# head(myData)
+
+# cyl gears   mean       sd n        se           names
+#   4     3 21.500       NA 1        NA 4 cyl / 3  gear
+#   4     4 26.925 4.807360 8 1.6996586 4 cyl / 4  gear
+#   4     5 28.200 3.111270 2 2.2000000 4 cyl / 5  gear
+#   6     3 19.750 2.333452 2 1.6500000 6 cyl / 3  gear
+#   6     4 19.750 1.552417 4 0.7762087 6 cyl / 4  gear
+#   6     5 19.700       NA 1        NA 6 cyl / 5  gear
+
+
+
+# tapply(myData$mean, list(myData$cyl, myData$gears),
+#        function(x) c(x = x))
+
+#       3      4    5
+# 4 21.50 26.925 28.2
+# 6 19.75 19.750 19.7
+# 8 15.05     NA 15.4
+
+
+# tabbedMeans <- tapply(myData$mean, list(myData$cyl, myData$gears),
+#                          function(x) c(x = x))
+
+# summed_tabbedMeans <- apply(tabbedMeans, 2, cumsum)
+
+
+# tabbedSE <- tapply(myData$se, list(myData$cyl, myData$gears),
+#                          function(x) c(x = x))
+
+# barCenters <- barplot(height = tabbedMeans,
+#                       beside = FALSE, las = 1,
+#                       cex.names = 0.75,
+#                       main = "Mileage by No. Cylinders and No. Gears",
+#                       ylab = "Miles per Gallon",
+#                       xlab = "No. Gears",
+#                       border = "black", axes = TRUE,
+#                       legend.text = TRUE,
+#                       args.legend = list(title = "No. Cylinders", 
+#                                          x = "topright",
+#                                          cex = .7))
+
+
+
+# segments(barCenters, summed_tabbedMeans - tabbedSE * 2,
+#          barCenters, summed_tabbedMeans + tabbedSE * 2,
+#          lwd = 1.5)
+
+# arrows(barCenters, tabbedMeans - tabbedSE * 2,
+#        barCenters, tabbedMeans + tabbedSE * 2,
+#        lwd = 1.5, angle = 90, code = 3, length = 0.05)

@@ -152,13 +152,54 @@ print.dispRity <- function(x, all = FALSE, ...) {
                 ## Accuracy
                 cat("Overall accuracy:\n")
                 if(is_bootstrapped) {
-                    median <- summarise.extract.list(x$support$accuracy, fun = stats::median, rounding = round_digit)
-                    sd <- summarise.extract.list(x$support$accuracy, fun = stats::sd, rounding = round_digit)
+                    median <- summarise.extract.list(x$support$accuracy$score, fun = stats::median, rounding = round_digit)
+                    sd <- summarise.extract.list(x$support$accuracy$score, fun = stats::sd, rounding = round_digit)
                     print_df <- cbind(median, sd)
+                    print_df <- as.data.frame(print_df)
                 } else {
-                    print_df <- cbind(lapply(x$support$accuracy, round, digits = round_digit))
+                    print_df <- cbind(lapply(x$support$accuracy$score, round, digits = round_digit))
+                    print_df <- as.data.frame(print_df)
                     colnames(print_df) <- ""
                 }
+
+                if(!is.null(x$support$accuracy$test)) {
+                    ## Getting the number of columns before the test
+                    n_col_prior <- ncol(print_df)
+
+                    token.converter <- function(p) {
+                        p <- as.numeric(format(p, digits = 4))
+
+                        if(p < 2.2e-16) {
+                            return(paste0("< 2.2e-16", " ***"))
+                        } else {
+                            if(p < 0.001) {
+                                return(paste0(p, " ***"))
+                            } else {
+                                if(p < 0.01) {
+                                   return(paste0(p, " **")) 
+                                } else {
+                                    if(p < 0.05) {
+                                        return(paste0(p, " *")) 
+                                    } else {
+                                        if(p < 0.1) {
+                                            return(paste0(p, " *"))
+                                        } else {
+                                            return(paste0(p, ""))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    ## Convert p_values
+                    p_values <- lapply(x$support$accuracy$p_value, token.converter)
+                    print_df$test <- p_values
+                    ## Add the test name
+                    colnames(print_df)[n_col_prior + 1] <- x$support$accuracy$test
+
+                }
+
                 print(print_df)
                 cat("\n")
 

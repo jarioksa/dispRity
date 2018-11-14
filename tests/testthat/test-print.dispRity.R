@@ -251,11 +251,15 @@ test_that("print.dispRity with lda.test data", {
     expect_warning(test2 <- lda.test(data_disparity, train = 10, bootstraps = 5))
     test3 <- lda.test(data_df, train = 10)
     test4 <- lda.test(data_df, train = 10, bootstraps = 3)
+    test5 <- lda.test(data_df, train = 50, bootstraps = 100, p.value = TRUE)
+    expect_warning(test6 <- lda.test(data_disparity, train = 10, p.value = "two.sided"))
 
     print_test1 <- capture.output(test1)
     print_test2 <- capture.output(test2)
     print_test3 <- capture.output(test3)
     print_test4 <- capture.output(test4)
+    print_test5 <- capture.output(test5)
+    print_test6 <- capture.output(test6)
 
     expect_equal(print_test1,
         c("Discriminant test:"                                                        ,
@@ -286,9 +290,9 @@ test_that("print.dispRity with lda.test data", {
         "Call: lda.test(data = data_disparity, train = 10, bootstraps = 5) "        ,
         ""                                                                          ,
         "Overall accuracy:"                                                         ,
-        "        median sd   "                                                   ,
-        "species 0.5    0.089"                                                      ,
-        "morpho  0.767  0.243"                                                      ,
+        "        median    sd"                                                   ,
+        "species    0.5 0.089"                                                      ,
+        "morpho   0.767 0.243"                                                      ,
         ""                                                                          ,
         "Proportion of trace:"                                                      ,
         "$species"                                                                  ,
@@ -328,8 +332,8 @@ test_that("print.dispRity with lda.test data", {
         "Call: lda.test(data = data_df, train = 10, bootstraps = 3) "               ,
         ""                                                                          ,
         "Overall accuracy:"                                                         ,
-        "        median sd   "                                                      ,
-        "species 0.8    0.107"                                                      ,
+        "        median    sd"                                                      ,
+        "species    0.8 0.107"                                                      ,
         ""                                                                          ,
         "Proportion of trace:"                                                      ,
         "$species"                                                                  ,
@@ -339,5 +343,47 @@ test_that("print.dispRity with lda.test data", {
         "LD3  0.000 0.000"                                                             ,
         ""                                                                          ,
         "Use summary.dispRity() or plot.dispRity() for displaying the full results.")
+        )
+
+    expect_equal(print_test5, 
+        c("Discriminant test:"                                                           ,
+        "Call: lda.test(data = data_df, train = 50, bootstraps = 100, p.value = TRUE) ",
+        ""                                                                             ,
+        "Overall accuracy:"                                                            ,
+        "        median    sd        t.test"                                           ,
+        "species   0.97 0.014 < 2.2e-16 ***"                                           ,
+        ""                                                                             ,
+        "Proportion of trace:"                                                         ,
+        "$species"                                                                     ,
+        "    median    sd"                                                             ,
+        "LD1  0.991 0.005"                                                             ,
+        "LD2  0.009 0.005"                                                             ,
+        "LD3  0.000 0.000"                                                             ,
+        ""                                                                             ,
+        "Use summary.dispRity() or plot.dispRity() for displaying the full results.")
+        )
+
+    expect_equal(print_test6, 
+        c("Discriminant test:"                                                         ,
+        "Call: lda.test(data = data_disparity, train = 10, p.value = \"two.sided\") ",
+        ""                                                                           ,
+        "Overall accuracy:"                                                          ,
+        "              bootstrap.test"                                               ,
+        "species 0.733    0.009901 **"                                               ,
+        "morpho  0.367    0.009901 **"                                               ,
+        ""                                                                           ,
+        "Proportion of trace:"                                                       ,
+        "$species"                                                                   ,
+        "     "                                                                      ,
+        "LD1 1"                                                                      ,
+        "LD2 0"                                                                      ,
+        ""                                                                           ,
+        "$morpho"                                                                    ,
+        "        "                                                                   ,
+        "LD1 0.79"                                                                   ,
+        "LD2 0.21"                                                                   ,
+        "LD3 0.00"                                                                   ,
+        ""                                                                           ,
+        "Use summary.dispRity() or plot.dispRity() for displaying the full results." )
         )
 })

@@ -14,7 +14,7 @@
 #' @param LASSO Logical, whether to perform a LASSO analysis.
 #' @param PGLS Logical, whether to perform a PGLS analysis.
 #' @param all.levels Logical, whether to always include all levels in the training dataset (\code{TRUE} - default) or not (\code{FALSE}). Not including speeds up the calculation but can generate errors when apply the discriminant function.
-#' @param p.value Optional, whether to calculate the p-value for the groupings' accuracy. Can be \code{"two-sided"} (default), \code{"greater"} or \code{"lesser"}.
+#' @param p.value Optional, whether to calculate the p-value for the groupings' accuracy. Can be \code{"two-sided"} (default), \code{"greater"} or \code{"less"}.
 #' @param ... Optional arguments to be passed to the discriminant function.
 
 # TODO: add a parallel option (to be applied at the wrapper level of run.multi.lda)]]
@@ -218,7 +218,7 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
 
     if(!missing(p.value)) {
         ## Check p-value class
-        p_class <- check.class(p.value, c("logical", "character"), msg = " must be either FALSE, TRUE (\"two.sided\") or any of the following: \"two.sided\", \"greater\", \"lesser\".")
+        p_class <- check.class(p.value, c("logical", "character"), msg = " must be either FALSE, TRUE (\"two.sided\") or any of the following: \"two.sided\", \"greater\", \"less\".")
 
         if(p_class == "logical") {
             if(p.value) {
@@ -229,12 +229,13 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
             }
         } else {
             test_p_value <- TRUE
-            check.method(p.value, c("two.sided", "greater", "lesser"), msg = "alternative")
+            check.method(p.value, c("two.sided", "greater", "less"), msg = "alternative")
             alternative <- p.value    
         }
 
         if(test_p_value) {
             if(bootstraps == 1) {
+                test_type <- "bootstrap.test"
                 ## Calculate the p-value using a bootstrap test
                 p_bootstraps <- 100
 
@@ -254,13 +255,14 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
                         return((sum(random >= mean(observed)) + 1)/(replicates + 1))
                     }
                 }
-                if(alternative == "lesser") {
+                if(alternative == "less") {
                     get.p.value <- function(random, observed, replicates) {
                         # Getting the p
                         return((sum(random <= mean(observed)) + 1)/(replicates + 1))
                     }
                 }
             } else {
+                test_type <- "t.test"
                 p_bootstraps <- bootstraps
                 ## Getting the p (note that replicates is the substitute argument for alternative for simplification)
                 get.p.value <- function(random, observed, replicates) {
@@ -314,7 +316,7 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
     ## Get the factors
     lda_out$support$factors <- factors
     ## Get the overall accuracy
-    lda_out$support$accuracy <- apply.accuracy.score(lda_out)
+    lda_out$support$accuracy$score <- apply.accuracy.score(lda_out)
     ## Get the overall fit
     lda_out$support$prop.trace <- apply.prop.trace(lda_out)
 
@@ -342,7 +344,10 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
             p_bootstraps <- alternative
         }
         ## Calculate the p-values using a random test
-        lda_out$support$p_value <- mapply(get.p.value, lda_out$support$accuracy, accuracies, MoreArgs = list("replicates" = p_bootstraps), SIMPLIFY = FALSE)
+        lda_out$support$accuracy$p_value <- mapply(get.p.value, lda_out$support$accuracy$score, accuracies, MoreArgs = list("replicates" = p_bootstraps), SIMPLIFY = FALSE)
+
+        ## Getting the test type
+        lda_out$support$accuracy$test <- test_type
     }
 
     ## Output the results
