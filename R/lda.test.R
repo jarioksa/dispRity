@@ -287,6 +287,8 @@ lda.test <- function(data, train, prior, type = "linear", bootstraps, CV = FALSE
     names(lda_out) <- names(factors)
 
     #TODO: Handle lda warnings! Capture them only once and print them only once.
+    #tryCatch()
+    #options(warn = 10) #Creates a last.warning object??
 
     # lda_out structure =
     # lda_out$factor1$bootstraps1

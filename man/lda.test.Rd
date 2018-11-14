@@ -5,7 +5,8 @@
 \title{Run a discriminant analysis type}
 \usage{
 \method{lda}{test}(data, train, prior, type = "linear", bootstraps,
-  CV = FALSE, LASSO = FALSE, PGLS = FALSE, all.levels = TRUE, ...)
+  CV = FALSE, LASSO = FALSE, PGLS = FALSE, all.levels = TRUE, p.value,
+  ...)
 }
 \arguments{
 \item{data}{A \code{dispRity} object with attributed subsets or a \code{matrix} with factors as the last column.}
@@ -26,6 +27,8 @@
 
 \item{all.levels}{Logical, whether to always include all levels in the training dataset (\code{TRUE} - default) or not (\code{FALSE}). Not including speeds up the calculation but can generate errors when apply the discriminant function.}
 
+\item{p.value}{Optional, whether to calculate the p-value for the groupings' accuracy. Can be \code{"two-sided"} (default), \code{"greater"} or \code{"lesser"}.}
+
 \item{...}{Optional arguments to be passed to the discriminant function.}
 }
 \value{
@@ -43,6 +46,12 @@ For example, for two tested factors with three bootstrap replicates each:
 }
 \description{
 Running a discriminant analysis or canonical variable analysis test on a \code{dispRity} object
+}
+\details{
+\code{p.value} is indicating the probability of the observed accuracy of the factor(s) to be different than random (the null hypothesis).
+Typically, when a two equally probable level factor is used, an accuracy of 50% is expected under the null hypothesis.
+When no bootstraps are used, the p-value is calculated using a bootstrap test on 100 bootstraps of the null hypothesis.
+When bootstraps are used, the p-value is calculated by applying a t-test on the distribution of the accuracy from the observed data and a the distribution of the null hypothesis for the same amount of bootstraps.
 }
 \examples{
 ## The classic iris example:

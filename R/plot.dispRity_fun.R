@@ -658,7 +658,7 @@ plot.lda.test <- function(data, ylim, xlab, ylab, col, observed, cent.tend, quan
                         ## Select the correct quantiles
                         quantile_values <- quantile_list_factor[[level]][, lines_cross[[level]][one_line]]
                         ## Adjust the quantile to the next bar level
-                        quantile_values <- quantile_values + ifelse(one_line == 1, 0, ys[(one_line ), level]) #one_line - 1
+                        quantile_values <- quantile_values + ifelse(one_line == 1, 0, ys[(one_line - 1), level]) #one_line - 1
                         for(cis in 1:quantiles_n) {
                             ## Get the y_values
                             y_vals <- c(quantile_values[c(cis, quantiles_n * 2 - (cis - 1))])
