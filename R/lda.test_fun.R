@@ -142,6 +142,21 @@ run.random.lda <- function(factor, data_matrix, prior, train, fun.type, bootstra
     return(replicate(bootstraps, run.one.lda(sample(factor, length(factor)), data_matrix, prior = prior, train = train, fun.type = fun.type, all.levels = all.levels, ...), simplify = FALSE))
 }
 
+
+# ## Wrapper for warning messages
+
+# testit <- function() {warning("the erre message"); return(list("theoutput" = 1))}
+
+# get.warnings <- function(fun, ...) {
+#     options(warn = -1)
+#     fun_out <- fun(...)
+#     options(warn = 0)
+#     return(list("output" = fun_out, "warnings" = names(last.warning)))
+# }
+
+# test <- get.warnings(testit)
+
+
 ## Getting a specific variable from a lda.test list
 extract.lda.test <- function(lda_test, what, where, deviation, cent.tend) {
 
